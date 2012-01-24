@@ -1,0 +1,477 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                                  %%
+%%      Package ed.sty provides macros to typeset ed 1.5            %%
+%%      testbanks in LaTeX. Macros can be run in XML production     %%
+%%      mode to generate XML output, or in tex preview mode         %%
+%%      (the default).                                              %%
+%%                                                                  %%
+%%      Options: xml - Declare the xml option to compile            %%
+%%                     XML production output                        %%
+%%                                                                  %%
+%%      Requires: Uses the tex4ht package to compile XML            %%
+%%                See the included examples for details.            %%
+%%                                                                  %%
+%%      Author: John L. Orr                                         %%
+%%      Last Modified: 12/05/01 by Steve Whalen                     %%
+%%                                                                  %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ProvidesPackage{ed}[1994/01/01 LaTeX2e standard classes]
+
+\RequirePackage{ifthen}
+\newboolean{isXML}
+
+\setlength{\parindent}{0pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                                  %%
+%%        Define macros for LaTeX Preview Mode                      %%
+%%            (redefined in production mode)                        %%
+%%                                                                  %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% These macros control the appearance of field labels.  Available options
+% for each are listed; use \relax for LaTeX default.  Not all combinations
+% are available in NFSS.
+
+\let\Family=\sffamily  % \sffamily, \rmfamily, \ttfamily
+\let\Series=\bfseries  % \bfseries, \mdseries
+\let\Shape=\upshape    % \upshape, \slshape, \scshape, \itshape
+
+% Calculate appropriate margins
+
+\setlength\textheight{9in}
+\setlength\topmargin{-.5in}
+\setlength\textwidth{507pt} % seems to create right margin of 1in
+\setlength\hoffset{-56pt}   % seems to create left margin of .75in
+\newlength\QuestionBoxWidth
+\setbox\@tempboxa=\hbox{\large\Family\Series\Shape Question 0.00\normalsize\enspace}
+\setlength\QuestionBoxWidth{\wd\@tempboxa}
+\addtolength\textwidth{-\QuestionBoxWidth}
+\addtolength\hoffset{\QuestionBoxWidth}
+\newlength\PartBoxWidth
+\setbox\@tempboxa=\hbox{\large\Family\Series\Shape Part m\normalsize\enspace}
+\setlength\PartBoxWidth{\wd\@tempboxa}
+
+% The text that goes in the ``answer'' field should treat $, %, ^ as
+% ordinary characters.
+
+\def\@removeSpecialCharCodes{%
+  \catcode`\$=12%
+  \catcode`\%=12%
+  \catcode`\^=12%
+  \catcode`\_=12%
+  \catcode`\&=12}
+
+% Utility macros used by the other higher level macros
+
+\newcommand{\@raw}[1]{{\tt\ignorespaces #1}}
+\newcommand{\@openhtmltag}[2][]{\par
+  \ifthenelse{\equal{#1}{}}{\@raw{<#2>}}{\@raw{<#2 #1>}}}
+\newcommand{\@closehtmltag}[1]{\@raw{</#1>}\par}
+
+\newcommand{\var}[1]{\@raw{\$#1}}
+
+% Macro that sets field labels
+
+\newcommand{\labelbox}[2][.5]{\noindent
+  \llap{\Family\Series\Shape #2\normalsize\hskip#1em}}
+
+% Several macros are defined below for preview mode.
+% Alternate defs are provided for production mode. 
+
+\newcommand{\htmltag}{\@ifstar{\@gobble}{\@htmltag}}
+\newcommand{\@htmltag}[2][]{\par\labelbox{#2}\ignorespaces\@raw{#1 }}
+\let\htmltag@nopar\htmltag
+
+
+% Topic and question environments. The argument for topic
+% is the topic name; the argument for question is the 
+% question mode
+
+\newcounter{TopicNumber}
+\newcounter{QuestionNumber}
+\newcounter{PartNumber}
+\newboolean{FirstQuestionInTopic}
+\newboolean{WithinMultipart}
+\newboolean{FirstPartInMultipart}
+\newenvironment{topic}[1]{\pagebreak
+  \stepcounter{TopicNumber}
+  \hskip-\QuestionBoxWidth\hrulefill
+  {\Large\raise.3ex\hbox{\labelbox[.25]{Topic \arabic{TopicNumber}}}%
+    {\Family\Series\Shape\hskip.25em}\ignorespaces\raise.3ex\hbox{#1}}%
+  \nopagebreak
+  \medskip\nopagebreak
+  \setboolean{FirstQuestionInTopic}{true}%
+  \setcounter{QuestionNumber}{0}}%
+  {\par}
+\newenvironment{question}[1]{%
+  \stepcounter{QuestionNumber}%
+  \bigskip
+  \hskip-\QuestionBoxWidth\lower.3ex\hbox to \QuestionBoxWidth{\hrulefill
+    \Family\Series\Shape\hskip.25em}%
+  \labelbox{\large Question \arabic{TopicNumber}.\arabic{QuestionNumber}}\nopagebreak
+  \ifthenelse{\equal{#1}{multipart}}{%
+    \FirstPartInMultiparttrue
+    \def\qutext{\htmltag{text}%
+	\renewenvironment{question}[1]{\par
+	  \stepcounter{PartNumber}%
+	  \leftskip 2pc
+	  \medskip
+	  \hskip-\PartBoxWidth\lower.3ex\hbox to \PartBoxWidth{\hrulefill
+	    \Family\Series\Shape\hskip.25em}%
+	  \labelbox{\large Part \alph{PartNumber}}\nopagebreak
+	  \element{mode}{####1}}{%
+      \par\filbreak
+	  \global\FirstPartInMultipartfalse
+	  \global\FirstQuestionInTopicfalse}}%
+    \WithinMultiparttrue
+    \setcounter{PartNumber}{0}}{}%
+  \element{mode}{#1}}%
+  {\filbreak
+  \global\FirstQuestionInTopicfalse}
+
+\newcommand{\qutext}{\htmltag{text}}
+
+\newcommand{\answer}{\htmltag{answer}\begingroup\@removeSpecialCharCodes\@answer}
+\newcommand{\@answer}[1]{\@raw{#1}\endgroup\htmltag*{answer}}
+
+\newcommand{\property}[2]{\htmltag[#1 =]{property}#2}
+
+% These macros set \blanks as text in a box.  For \blank[menu],
+% comma-delimited selections are set in a boxed, vertical list.
+
+{\catcode`\,=\active
+\gdef\makecomma{\catcode`\,=\active
+  \def,{\egroup\hbox\bgroup\ignorespaces}}}
+\newcommand{\blank}[1][text]{\begingroup
+  \ifthenelse{\equal{#1}{menu}}{\makecomma}{}%
+  \@removeSpecialCharCodes\tt\@blank}
+\newcommand{\@blank}[1]{\fbox{\vtop{\hbox{#1}}}\endgroup\hskip2pt}
+
+% Macros to insert a line break after semicolons
+% in \code and \info fields
+
+{\catcode`\;=\active
+\gdef\makesemicolon{\catcode`\;=\active
+  \def;{\char'073\newline}}}
+\newcommand{\code}{\par\labelbox{code}\ignorespaces
+  \begingroup\@removeSpecialCharCodes\makesemicolon\@code}
+\newcommand{\@code}[1]{\@raw{#1}\endgroup
+  \vskip-\baselineskip}
+\newcommand{\info}{\par\labelbox{info}\ignorespaces
+  \begingroup\@removeSpecialCharCodes\makesemicolon\@code}
+\newcommand{\@info}[1]{\@raw{\@GlobalInfo #1}\endgroup
+  \vskip-\baselineskip}
+
+% Macro to specify text to automatically appear in all
+% \info fields
+
+\def\setGlobalInfo#1{\def\@GlobalInfo{#1}}
+\def\@GlobalInfo{}
+  
+% A replacement for ^\circ to produce the degree symbol.
+% Included because its XML definition produces superior results.
+
+\newcommand{\textdegree}{\ifmmode\else$\fi^\circ\ifmmode$\fi}
+\let\degree\textdegree
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                                  %%
+%%        Define macros for XML Production Mode                     %%
+%%            (redefines macros from above)                         %%
+%%                                                                  %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\DeclareOption{xml}{
+
+  % We want to be able to embed \var inside some of the other macros which
+  % are sending raw output. So when \var may be embedded in an argument, use
+  % \hCode instead of \HCode. That way it's safe to use \var inside it
+
+  \newcommand{\avar}[2][mn]{{\ifmmode\HCode{<#1>${#2}</#1>}\else\HCode{${#2}}\fi}}
+    % the extra braces in \avar are necessary; otherwise, we'd have problems
+    % using super- and/or subscripts within \frac constructs  
+  \newcommand{\bvar}[1]{\ifmmode<mn>${#1}</mn>\else ${#1}\fi}
+  \let\var\avar
+
+  \newcommand{\hCode}{\begingroup
+	\let\var\bvar
+    \@removeSpecialCharCodes
+	\@hCode}
+  \newcommand{\@hCode}[1]{\HCode{#1}\endgroup}
+
+  % Flag which mode we're in
+
+  \setboolean{isXML}{true}
+
+  % Redefine base macros
+
+  \renewcommand{\@openhtmltag}{\@ifstar{\@openhtmltag@nopar}{\@openhtmltag@par}}
+  \newcommand{\@openhtmltag@par}[2][]{\IgnorePar\EndP\hCode{<#2 #1>}\par\ShowPar}
+  \newcommand{\@openhtmltag@nopar}[2][]{\hCode{<#2 #1>}}
+  \renewcommand{\@closehtmltag}{\@ifstar{\@closehtmltag@nopar}{\@closehtmltag@par}}
+  \newcommand{\@closehtmltag@par}[1]{\IgnorePar\EndP\HCode{</#1>}}
+  \newcommand{\@closehtmltag@nopar}[1]{\HCode{</#1>}}
+  \renewcommand{\@raw}{\hCode}
+
+  % \htmltag{elt} and \htmltag*{elt} provide <elt> and </elt> respectively
+  % The optional argument for \htmltag sets attributes: 
+  %   \htmltag[name='foo']{elt} gives <elt name='foo'
+
+  \renewcommand{\htmltag}{\@ifstar{\@closehtmltag}{\@openhtmltag}}
+  \renewcommand{\htmltag@nopar}{\@ifstar{\@closehtmltag*}{\@openhtmltag*}}
+
+  % Redefine topic and question environments, as well as \qutext macro
+  
+  \renewenvironment{topic}[1]{\htmltag[name="#1"]{topic}}{\htmltag*{topic}}
+  \renewenvironment{question}[1]{\htmltag{item}\element{mode}{#1}}{\htmltag*{item}}
+
+  \renewcommand{\qutext}[1]{\element{question}{#1}}
+
+  \renewcommand{\answer}[1]{\hCode{<answer>#1</answer>}}
+  
+  % Used for fill in the blank types. The optional argument
+  % is the type of response the blank expects (text/formula/menu)
+
+  \newif\ifWasInMMode \WasInMModefalse
+  \renewcommand{\blank}[2][text]{\ifmmode$\WasInMModetrue\fi
+    \element*[type='#1']{blank}{%
+	  \ifthenelse{\equal{#1}{menu}}{}{\@raw}{#2}%
+	}%
+	\ifWasInMMode$ \WasInMModefalse\fi}
+
+  % Macros for algorithmic questions. Use \code for the body of the
+  % algorithm and \var to reference variables
+  
+  \renewcommand{\code}{\htmltag{code}\begingroup\@removeSpecialCharCodes\@code}
+  \renewcommand{\@code}[1]{\@raw{#1}\endgroup\htmltag*{code}}
+  \renewcommand{\info}{\htmltag{info}\begingroup\@removeSpecialCharCodes\@info}
+  \renewcommand{\@info}[1]{\@raw{\@GlobalInfo #1}\endgroup\htmltag*{info}}
+
+  % \property macro
+    
+  \renewcommand{\property}[2]{\htmltag[name='#1']{property}#2\htmltag*{property}}
+  
+  % \$ needs to produce `\\$' in HTML output
+  
+  \renewcommand{\$}{\HCode{\string\\$}}
+  
+  % degree symbol
+  
+  \renewcommand\textdegree{\ifmmode\Tg<mo>\fi\HCode{&deg;}\ifmmode\Tg</mo>\fi}
+  \newcommand\rawtextdegree{&deg;}
+  \let\degree\textdegree
+
+  % epsfig.sty not loaded in production mode, but \graphicspath may
+  %   appear in tex file
+
+  \let\graphicspath\@gobble
+}
+
+\ProcessOptions
+
+% Only load tex4ht macros if we're in XML production mode
+
+\ifthenelse{\boolean{isXML}}%
+  {\RequirePackage[xhtml,mathml-,html4.4ht,unicode.4ht,mathml.4ht]{tex4ht}}%
+  {\RequirePackage{epsfig}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                                  %%
+%%                  Main Body of Macros Defs                        %%
+%%                                                                  %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \element[attlist]{elt}{body} sets an element. Eg
+%   \element[href='home.html']{a}{Click here} 
+% is presented as
+%   <a href='home.html'>Click here</a>
+
+\newcommand{\element}{\@ifstar{\element@nopar}{\element@par}}
+\newcommand{\element@nopar}[3][]{\htmltag@nopar[#1]{#2}#3\htmltag@nopar*{#2}}
+\newcommand{\element@par}[3][]{\htmltag[#1]{#2}#3\htmltag*{#2}}
+
+% \param{name}{value} sets an applet <param> tag
+
+\newcommand{\param}[2]{\element[name='#1' value='#2']{param}{}}
+
+% Common fields for all (or almost all) question types
+
+\newcommand{\name}[1]{\element{name}{#1}}
+\newcommand{\comment}[1]{\element{comment}{#1}}
+\newcommand{\solution}[1]{\element{solution}{#1}}
+
+% Controls numbering for multipart questions
+
+\newcommand{\numbering}[1]{\element{numbering}{#1}}
+
+% Macros for multiple choice, multiple selection and true/false.
+% Use \choice* to mark the correct choice(s)
+
+\newcommand{\choice}{\@ifstar{\@choicec}{\@choice}}
+\newcommand{\@choicec}[1]{\element{correct-choice}{#1}}
+\newcommand{\@choice}[1]{\element{choice}{#1}}
+
+\newcommand{\true}{\choice*{True}\choice{False}}
+\newcommand{\false}{\choice{True}\choice*{False}}
+
+
+% Used in matrix question type. Rare - safe to ignore
+
+\newcommand{\size}[2]{\element[rows='#1' cols='#2']{size}{}}
+
+
+% Macros for matching question types; \cols defined separately for each mode
+% It's hard to tell just what the macros are, because of the complicated defs,
+% so here's the summary:
+%   \match{this}\with{that} is self explanatory: `this' is to be matched with `that'
+%   \match{this}\with{that}\also{the other} sets `that' and `the other' as
+%     correct matches, but also lists the wrong answer `the other' as a choice.
+
+{\catcode`\{=\active \catcode`\[=1%
+\gdef\@dotags#1[\htmltag[#1}%
+  \def\end@this@tag[\htmltag*[#1}}%
+  \begingroup
+  \catcode`\{=\active \catcode`\[=1%
+  \def{[\endgroup
+    \bgroup\aftergroup\end@this@tag}}}
+\def\match{\@dotags{match}}
+\def\with{\@dotags{with}}
+\def\decoy{\@dotags{also}}
+\def\also{\immediate\write16{Package ed Warning: \@backslashchar also
+  outdated;^^J(ed) \space\space\space\space\space\space\space\space
+  \space\space\space\space\space\space\space \@backslashchar decoy
+  should be used instead^^J(ed) \space\space\space\space\space\space
+  \space\space\space\space\space\space\space\space\space on input line
+  \the\inputlineno.}\decoy}
+\newcommand{\cols}[1]{\element[size='#1']{cols}{}}
+
+
+% Macros for drawing axes
+
+\newcommand{\axes}[2][]{\element*[labeled="true"
+  background="\@ImageBase #1"]{axes}{\@raw{#2}}}
+\newcommand{\unlabeledaxes}[2][]{\element*[labeled="false"
+  background="\@ImageBase #1"]{axes}{\@raw{#2}}}
+\let\unlabelledaxes\unlabeledaxes
+\newcommand{\gridlines}[1]{\element*{gridlines}{\@raw{#1}}}
+\newcommand{\example}[1]{\element*{example}{\@raw{#1}}}
+
+
+% To include images in the testbank, set the image base once, 
+% in the preamble to the document, then use:
+%   \image{imagename.gif}
+
+\def\setImageBase#1{\filename@parse{#1}%
+  \ifx\filename@base\empty
+    \def\@ImageBase{#1}%
+  \else
+    \def\@ImageBase{#1/}%
+  \fi}
+\@ifundefined{@ImageBase}{\let\@ImageBase\relax}\relax
+\newif\if@ImageExtDefault \@ImageExtDefaultfalse
+\def\@stripdot#1{\ifx#1.\else#1\fi}
+\newcommand{\setImageExt}[2][]{\edef\@ImageExt{\expandafter\@stripdot#2}%
+  \ifx#1!\@ImageExtDefaulttrue\fi}
+\@ifundefined{@ImageExt}{\let\@ImageExt\relax}\relax
+\newtoks\@extension@
+\def\@DetermineExt#1{%
+  \ifx\filename@ext\relax
+    \if@ImageExtDefault
+      \expandafter\@extension@\expandafter{\expandafter.\@ImageExt}%
+    \else\ifx#1\relax
+      \ifx\@ImageExt\relax
+	    \@extension@{.jpg}%
+      \else\expandafter\@extension@\expandafter{\expandafter.\@ImageExt}%
+      \fi
+    \else\@extension@{.#1}%
+	\fi
+    \fi
+  \else
+    \expandafter\@extension@\expandafter{\expandafter.\filename@ext}
+  \fi}
+\newif\if@useEpsfig
+\def\@doEpsfig#1{\epsfig{figure=#1}}
+\newcommand{\image}[2][\relax]{\filename@parse{#2}%
+  \ifisXML
+    \@useEpsfigfalse
+	\ifthenelse{\equal{\filename@ext}{eps}}{\let\filename@ext\relax}{}%
+  \else
+    \ifx\filename@ext\relax%
+	  \@useEpsfigtrue
+	\else
+	  \ifthenelse{\equal{\filename@ext}{eps}}{\@useEpsfigtrue}{\@useEpsfigfalse}%
+    \fi
+  \fi
+  \if@useEpsfig
+    \expandafter\expandafter\expandafter\@doEpsfig
+	  \expandafter\expandafter\expandafter{%
+	  \expandafter\expandafter\expandafter\filename@area\filename@base.eps}%
+  \else
+    \@DetermineExt{#1}%
+    \element[src='\@ImageBase\filename@area\filename@base\the\@extension@']{img}{}%
+  \fi}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                                  %%
+%%             Code for various applets                             %%
+%%                                                                  %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% A graph plotting component
+% Use: \graph{formula}{xMin}{xMax}{yMin}{yMax}
+
+\newcommand{\graph}{\begingroup\@removeSpecialCharCodes\@graph}
+\newcommand{\@graph}[6][10]{%
+  \element[code='applets.grapher.Graph' width='250' height='250' archive='graphing.jar']{applet}{%
+    \param{y1}{#2}
+    \param{xMin}{#3}
+    \param{xMax}{#4}
+    \param{yMin}{#5}
+	
+    \param{yMax}{#6}
+    \param{gridLines}{#1}
+  }\endgroup
+}
+\newcommand{\multigraph}{\begingroup\@removeSpecialCharCodes\@multigraph}
+\newcommand{\@multigraph}[7][10]{%
+  \element[code='applets.grapher.Graph' width='250' height='250' archive='graphing.jar']{applet}{%
+    \param{y1}{#2}
+    \param{y2}{#3}
+    \param{xMin}{#4}
+    \param{xMax}{#5}
+    \param{yMin}{#6}
+    \param{yMax}{#7}
+    \param{gridLines}{#1}
+  }\endgroup
+}
+
+
+% A labelled image
+% Use:
+%   \begin{labelgraphic}{img.gif}{width}{height}
+%     \grlabel{\var{mass}}{x1}{y1}
+%     \grlabel{\var{height}}{x2}{y2}
+%     ...
+%   \end{labelgraphic}
+
+\newcounter{labelgraphic}
+\newenvironment{labelgraphic}[3]{
+  \htmltag[code="applets.labelImage.LabelImage" width='#2' height='#3']{applet}
+  \param{image}{\@ImageBase #1}
+}{
+  \param{size}{\arabic{labelgraphic}}
+  \setcounter{labelgraphic}{0}
+  \htmltag*{applet}
+}
+
+\newcommand{\grlabel}[3]{
+  \stepcounter{labelgraphic}
+  \param{label.\arabic{labelgraphic}.text}{#1}
+  \param{label.\arabic{labelgraphic}.x}{#2}
+  \param{label.\arabic{labelgraphic}.y}{#3}
+}

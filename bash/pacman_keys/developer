@@ -1,0 +1,3 @@
+curl https://www.archlinux.org/developers/ |
+awk -F\" '(/pgp.mit.edu/) {sub(/.*search=0x/,"");print $1}' |
+xargs pacman-key --recv-keys

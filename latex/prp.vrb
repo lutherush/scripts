@@ -1,0 +1,26 @@
+\transwipe 
+\frametitle{Dodatak}
+
+Na mjestu gdje u dokumentu želimo umetnuti sliku koristimo naredbu: {\color{blue}\verb+\includegraphics[opcije]{ime_slike}+} \\
+\vspace{0.4 cm}
+U zaglavlje smo stavili: {\color{violet}\verb+\usepackage[pdftex]{graphicx}+}\\
+\vspace{0.3 cm}
+Našu sliku smo uèitali i odredili joj velièinu unutar {\color{purple}\textit{figure}} okruženja naredbom {\color{violet}\verb+\includegraphics[width=1.25\textwidth]{Naslov.jpg}+} \\
+
+\vspace{0.3 cm}
+
+Dobiveni okvir oko slike smo postigli naredbom {\color{purple}\verb+\shadowbox+} koju koristimo unutar makro paketa {\color{purple}\textit{fancybox}}.\\
+%Dodatnim opcijama mogu se postiæi razne transformacije slike.
+
+\scriptsize\begin{verbatim}
+\begin{figure}[h]
+
+ \shadowbox{
+
+ \includegraphics[width=1.25\textwidth]{Naslov.jpg} }
+
+\end{figure}
+\end{verbatim}
+\hypertarget{slika}{}
+\hyperlink{vrati}{\beamerreturnbutton{POVRATAK}}
+

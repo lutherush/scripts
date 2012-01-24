@@ -1,0 +1,950 @@
+%%
+%% October 22, 1999
+%%
+%% pseudocode.sty
+%%
+%% COPYRIGHT: 1999  by D.L. Kreher and D.R. Stinson
+%% E-MAIL:   kreher@mtu.edu    dstinson@uwaterloo.ca
+%%
+%% DESCRIPTION:
+%%   pseudocode.sty is a LaTeX style option, consisting of:
+%%   the environment pseudocode
+%%
+%% INSTALLATION:
+%%   Put this file where your TeX looks for inputs.
+%%
+%% DOCUMENTATION:
+%%  See pseudocode.tex, which might be appended to this file.
+%%
+%% COPYING:
+%%   Copying of part or all of this file is allowed under the following
+%%   conditions only:
+%%   (1) You may freely distribute unchanged copies of the file. Please
+%%       include the documentation when you do so.
+%%   (2) You may modify a renamed copy of the file, but only for personal
+%%       use or use within an organization.
+%%   (3) You may copy fragments from the file, for personal use or for
+%%       distribution, as long as credit is given where credit is due.
+%%
+%%   You are NOT ALLOWED to take money for the distribution or use of
+%%   this file or modified versions or fragments thereof, except for
+%%   a nominal charge for copying etc.
+%%
+%%  \RETURN altered  Oct 22, 1999
+%%  Allowed for two column  formating  Dec 2, 2002
+%%
+%% CODE:
+\typeout{**                                           }
+\typeout{** Document Style `pseudocode' - environment }
+\typeout{** by D.L. Kreher and D.R. Stinson           }
+\typeout{**                                           }
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{pseudocode}
+%
+\if@twocolumn
+\newlength{\pcode@width}
+\setlength{\pcode@width}{\columnwidth}
+\addtolength{\pcode@width}{-40pt}
+\else
+\newlength{\pcode@width}
+\setlength{\pcode@width}{\textwidth}
+\addtolength{\pcode@width}{-40pt}
+\fi
+%
+\RequirePackage{fancybox}
+\RequirePackage{ifthen}
+%
+\newcommand{\pcode@AF}[1]{\mbox{\textsc{#1}}} % Algorithm font
+\newcounter{pseudocode}[section]
+\newcounter{pseudonum}
+\renewcommand{\thepseudonum}{\arabic{pseudonum}}
+\newcommand{\pcode@tab}[1]{\hspace*{#1ex}}
+\renewcommand{\thepseudocode}{\thesection.\arabic{pseudocode}}
+%
+\newboolean{pcode@plain}
+\newboolean{pcode@ruled}
+\newboolean{pcode@disp}
+\newboolean{pcode@shad}
+\newboolean{pcode@dbox}
+\newboolean{pcode@obox}
+\newboolean{pcode@Obox}
+\newboolean{pcode@fbox}
+%
+\newenvironment{pseudocode}[3][plain]
+{%
+ \refstepcounter{pseudocode}%
+ \ifthenelse{\equal{#1}{plain}}{\setboolean{pcode@plain}{true}}{\setboolean{pcode@plain}{false}}%
+ \ifthenelse{\equal{#1}{ruled}}{\setboolean{pcode@ruled}{true}}{\setboolean{pcode@ruled}{false}}%
+ \ifthenelse{\equal{#1}{display}}{\setboolean{pcode@disp}{true}}{\setboolean{pcode@disp}{false}}%
+ \ifthenelse{\equal{#1}{shadowbox}}{\setboolean{pcode@shad}{true}}{\setboolean{pcode@shad}{false}}%
+ \ifthenelse{\equal{#1}{doublebox}}{\setboolean{pcode@dbox}{true}}{\setboolean{pcode@dbox}{false}}%
+ \ifthenelse{\equal{#1}{ovalbox}}{\setboolean{pcode@obox}{true}}{\setboolean{pcode@obox}{false}}%
+ \ifthenelse{\equal{#1}{Ovalbox}}{\setboolean{pcode@Obox}{true}}{\setboolean{pcode@Obox}{false}}%
+ \ifthenelse{\equal{#1}{framebox}}{\setboolean{pcode@fbox}{true}}{\setboolean{pcode@fbox}{false}}%
+ \setcounter{pseudonum}{0}%
+ \ifthenelse{\boolean{pcode@disp}}%
+ {%
+  \noindent\begin{math}%
+ }%
+ {%
+  \begin{Sbox}%
+  \begin{minipage}{\pcode@width}%
+  \ifthenelse{\boolean{pcode@ruled}}
+  {
+   \noindent\rule{\pcode@width}{1pt}\hfill\\
+   {\bfseries Algorithm \thepseudocode:\pcode@tab{1}}\pcode@AF{#2}($#3$)\\
+   \noindent\rule{\pcode@width}{1pt}\hfill\\[1ex]
+  }
+  {
+   {\bfseries Algorithm \thepseudocode:\pcode@tab{1}}\pcode@AF{#2}($#3$)\\[2ex]
+  }
+  \noindent\begin{math}\begin{array}{@{\pcode@tab{1}}lr@{}}%
+ }{}%
+}%
+{%
+ \ifthenelse{\boolean{pcode@disp}}%
+ {%
+  \end{math}
+ }%
+ {%
+  \ifthenelse{\boolean{pcode@ruled}}
+  {
+   \end{array}\end{math}\\[1ex]
+   \noindent\rule{\pcode@width}{1pt}\hfill
+   \end{minipage}\end{Sbox}\bigskip\noindent%
+  }
+  {\end{array}\end{math}\end{minipage}\end{Sbox}\bigskip\noindent}%
+  \ifthenelse{\boolean{pcode@plain}}{\TheSbox}{}%
+  \ifthenelse{\boolean{pcode@ruled}}{\TheSbox}{}%
+  \ifthenelse{\boolean{pcode@shad}}{\shadowbox{\TheSbox}}{}%
+  \ifthenelse{\boolean{pcode@dbox}}{\doublebox{\TheSbox}}{}%
+  \ifthenelse{\boolean{pcode@obox}}{\cornersize*{4ex}\ovalbox{\TheSbox}}{}%
+  \ifthenelse{\boolean{pcode@Obox}}{\cornersize*{4ex}\Ovalbox{\TheSbox}}{}%
+  \ifthenelse{\boolean{pcode@fbox}}{\fbox{\TheSbox}}{}%
+  \bigskip%
+ }%
+}%
+%
+\newcommand{\STMTNUM}[2]{&\refstepcounter{pseudonum}\hspace*{#1}%
+\mbox{(\thepseudonum)\label{#2}}}
+\newcommand{\LOCAL}[1]{\mbox{\bfseries local}\pcode@tab{1}#1}
+\newcommand{\GLOBAL}[1]{\mbox{\bfseries global}\pcode@tab{1}#1}
+\newcommand{\EXTERNAL}[1]{\mbox{\bfseries external}\pcode@tab{1}#1}
+\newcommand{\COMMENT}[1]%
+{%
+ \vspace*{1ex}%
+ \mbox{\bfseries comment:}\pcode@tab{.5} \mbox{#1}
+}
+\newcommand{\BEGIN}{\left\{\begin{array}{@{}lr@{}}}
+\newcommand{\END}{\end{array}\right.}
+\newcommand{\PROCEDURE}[2]%
+{%
+ \mbox{\bfseries procedure }\pcode@AF{#1}(\ensuremath{#2})\\%
+ \begin{array}{@{\pcode@tab{1}}l@{}}%
+}
+\newcommand{\ENDPROCEDURE}{\vspace*{2ex}\end{array}\\ }
+\newcommand{\CALL}[2]{\pcode@AF{#1}(#2)} % 
+\newcommand{\MAIN}{\mbox{\bfseries main}\\\begin{array}{@{\pcode@tab{1}}lr@{}}}
+\newcommand{\ENDMAIN}{\end{array}}
+\newcommand{\RETURN}[1]{\ifthenelse{\equal{#1}{} }%
+{\mbox{\bfseries return }}%
+{\mbox{\bfseries return }(#1)}}
+\newcommand{\OUTPUT}[1]{\mbox{\bfseries output }(#1)}
+\newcommand{\EXIT}{\mbox{\bfseries exit }}
+\newcommand{\IF}{\mbox{\bfseries if }}
+\newcommand{\LET}{\mbox{\bfseries let }}
+\newcommand{\CTHEN}{\pcode@tab{1}\mbox{ \bfseries then }}
+\newcommand{\CELSE}{\pcode@tab{1}\mbox{ \bfseries else }}
+\newcommand{\THEN}{\\\pcode@tab{1}\mbox{ \bfseries then }}
+\newcommand{\ELSE}{\\\pcode@tab{1}\mbox{ \bfseries else }}
+\newcommand{\ELSEIF}{\\\pcode@tab{1}\mbox{ \bfseries else if }}
+\newcommand{\FOREACH}{\mbox{\bfseries for each }}
+\newcommand{\FOR}{\mbox{\bfseries for }}
+\newcommand{\TO}{\mbox{ \bfseries to }}
+\newcommand{\DOWNTO}{\mbox{ \bfseries downto }}
+\newcommand{\CASE}{\mbox{\bfseries case }}
+\newcommand{\OF}{\\\pcode@tab{1}\mbox{ \bfseries of }\BEGIN}
+\newcommand{\ENDCASE}{\END}
+\newcommand{\AND}{\mbox{ \bfseries and }}
+\newcommand{\OR}{\mbox{ \bfseries or }}
+\newcommand{\NOT}{\mbox{ \bfseries not }}
+\newcommand{\SUCCESS}{\mbox{ \bfseries success }}
+\newcommand{\FAIL}{\mbox{ \bfseries fail }}
+\newcommand{\TRUE}{\mbox{ \bfseries true }}
+\newcommand{\FALSE}{\mbox{ \bfseries false }}
+\newcommand{\GOTO}{\mbox{\bfseries go to }}
+\newcommand{\DO}{\\\pcode@tab{1}\mbox{ \bfseries do }}
+\newcommand{\ADO}{\mbox{ \bfseries do }}
+\newcommand{\WHILE}{\mbox{\bfseries while }}
+\newcommand{\REPEAT}{\mbox{\bfseries repeat }\\\begin{array}{@{\pcode@tab{1}}lr@{}}}
+\newcommand{\UNTIL}{\end{array}\\\mbox{\bfseries until }}
+\newcommand{\GETS}{\leftarrow}
+\endinput
+%% END pseudodcode.sty
+
+%% START pseudocode.tex
+\documentclass{article}
+\usepackage{pseudocode}
+\textwidth=4.5in
+\textheight=7.125in
+%
+%
+%    September 2, 1999
+%
+%
+\title{Pseudocode: A \LaTeX\  Style File for Displaying Algorithms}
+\author{
+D.L.\ Kreher\\
+Department of Mathematical Sciences\\
+Michigan Technological University \\ 
+Houghton, MI 49931\\
+{\tt kreher@mtu.edu}\\[1ex]
+and \\[1ex]
+D.R.\ Stinson\\
+Department of Combinatorics and Optimization\\
+University of Waterloo\\
+Waterloo ON, N2L 3G1\\
+{\tt dstinson@uwaterloo.ca}
+}
+
+\newcommand{\keyword}[1]{\texttt{#1}}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+This paper describes a \LaTeX\  environment named \keyword{pseudocode} that can be used
+for describing algorithms in pseudocode form.  This is the style used
+in our %recently published 
+textbook {\em Combinatorial Algorithms: Generation, Enumeration and Search}
+\cite{cages}.  The style file \keyword{pseudocode.sty} is available for free
+downloading from the web page
+\verb+http://www.math.mtu.edu/~kreher/cages.html+
+
+This package is quite easy to use, and allows algorithms to be described 
+in a \LaTeX\  document using a natural Pascal-like syntax.  In the remaining sections
+of this note, we describe how to use the \keyword{pseudocode} environment
+and we present some examples.  Readers familiar with \LaTeX\ 
+(see \cite{lamport}) should be
+able to easily customize the style file to include additional desired features.
+
+The \keyword{pseudocode} environment requires the \keyword{fancybox}
+package by Timothy Van Zandt.  This package is described in 
+Section 10.1.3 of \cite{LC}.
+Other environments for describing algorithms include
+\keyword{alg}, \keyword{algorithmic}, \keyword{newalg} and \keyword{program}.
+These style files, as well as \keyword{fancybox}, are all available from the CTAN web site
+\verb+http://www.ctan.org/+
+
+\section{The \keyword{pseudocode} Environment}
+
+Within the \keyword{pseudocode} environment, a number of commands for 
+popular algorithmic constructs are available.
+In general, the commands provided can be nested to
+describe quite complex algorithms. 
+
+The \keyword{pseudocode} environment is  invoked
+as follows:
+\begin{verbatim}
+\begin{pseudocode}{<Name>}{<Parameters>}
+  pseudocode constructs
+\end{pseudocode}
+\end{verbatim}
+
+\noindent{}The argument  \verb+<Name>+ is the name of the algorithm, and
+ \verb+<Parameters>+ is a list of parameters for the algorithm.
+For example, the commands
+
+\begin{verbatim}
+\begin{pseudocode}{CelsiusToFahrenheit}{c}
+  f \GETS {9c/5} + 32\\
+  \RETURN{f}
+\end{pseudocode}
+\end{verbatim}
+
+\noindent{}produce the following output when included in
+a \LaTeX\  document:
+
+\begin{pseudocode}{CelsiusToFahrenheit}{c}
+  f \GETS {9c/5} + 32\\
+  \RETURN{f}
+\end{pseudocode}
+
+Notice that the command \verb+\GETS+ produces a 
+left arrow, which we use to indicate an assignment of
+a variable.  The user could use instead some other symbol, if desired.
+For example, \verb+\GETS+ could be replaced by \verb+=+,
+as is done in the ``C'' programming language.
+
+\subsection{ The {\em begin-end} Construct}
+
+To form compound statements from simple statements, the {\em begin-end} 
+construct is used as follows:
+\begin{verbatim}
+ \BEGIN
+    some statement\\
+    another statement\\
+    yet another statement
+ \END
+\end{verbatim}
+This generates the following:
+
+\medskip
+\begin{pseudocode}[display]{}{}
+\BEGIN
+\mbox{some statement}\\
+\mbox{another statement}\\
+\mbox{yet another statement}
+\END
+\end{pseudocode}
+
+\noindent{}The effect of this construct is to group 
+a collection of statements
+using a left brace bracket of the appropriate size.
+
+In the sections that follow we will use the notation
+\verb+<stmt>+
+to indicate  a simple statement or a compound statement.
+Note that the contents of statements are typeset in math mode.
+Therefore, non-math mode text must be enclosed in an
+\verb+\mbox{}+.
+
+Observe that the double backslash \verb+\\+ plays the same
+role as the semicolon in Pascal, i.e., it is used to
+separate statements, and should never appear before
+\verb+\END+.
+
+\subsection{The {\em if-then-else} Construct}
+
+The {\em if-then-else} construct takes various forms,
+such as the following:
+\begin{verbatim}
+\IF <condition> \THEN <stmt> 
+\IF <condition> \THEN <stmt> \ELSE <stmt> 
+\IF <condition> \THEN <stmt> \ELSEIF <stmt> \THEN <stmt> 
+\end{verbatim}
+Note that there is no limit placed on the number
+of \verb+\ELSEIF+s that may be used in an {\em if-then-else} construct.
+For example,  the commands:
+\begin{verbatim}
+\IF some condition is true
+\THEN
+ \BEGIN
+    some statement\\
+    another statement\\
+    yet another statement
+ \END
+\ELSEIF some other condition is true
+\THEN
+ \BEGIN
+    some statement\\
+    another statement\\
+    yet another statement
+ \END
+\ELSEIF some even more bizarre condition is met
+\THEN 
+  do something else
+\ELSE
+  do the default actions
+\end{verbatim}
+
+\noindent{}would produce the following output:
+
+\medskip
+\begin{pseudocode}[display]{}{}
+\IF \mbox{some condition is true}
+\THEN 
+\BEGIN
+\mbox{some statement}\\
+\mbox{another statement}\\
+\mbox{yet another statement}
+\END
+\ELSEIF \mbox{some other condition is true}
+\THEN 
+\BEGIN
+\mbox{some statement}\\
+\mbox{another statement}\\
+\mbox{yet another statement}
+\END
+\ELSEIF\mbox{some even more bizarre condition is met}
+\THEN \mbox{do something else}
+\ELSE
+\mbox{do the default actions}
+\end{pseudocode}
+
+\subsection{The {\em for} Loop}
+
+The {\em for} loop takes the following forms:
+\begin{verbatim}
+\FOR <var> \GETS <lower>  \TO <upper> \DO <stmt> 
+\FOR <var> \GETS <upper>  \DOWNTO <lower> \DO <stmt> 
+\FOREACH <condition> \DO  <stmt> 
+\end{verbatim}
+For example,
+\begin{verbatim}
+\FOR i \GETS 0 \TO 10 \DO
+  some processing
+\end{verbatim}
+produces
+
+\medskip
+\begin{pseudocode}[display]{}{}
+\FOR i \GETS 0 \TO 10 \DO
+\mbox{some processing}
+\end{pseudocode}
+
+\noindent{}and
+
+\begin{verbatim}
+\FOREACH x \in \mathcal{S}  \DO
+  some processing 
+\end{verbatim}
+
+\noindent{produces}
+
+\medskip
+\begin{pseudocode}[display]{}{}
+\FOREACH x \in \mathcal{S}  \DO
+  \mbox{some processing}
+\end{pseudocode}
+
+\subsection{The {\em while} Loop}
+
+The {\em while} loop takes the following form:
+
+\begin{verbatim}
+\WHILE <condition> \DO <stmt> 
+\end{verbatim}
+
+\noindent{}For example,
+
+\begin{verbatim}
+\WHILE some condition holds \DO 
+  some processing 
+\end{verbatim}
+
+\noindent{}produces
+
+\medskip
+\begin{pseudocode}[display]{}{}
+\WHILE \mbox{some condition holds} \DO 
+\mbox{some processing }
+\end{pseudocode}
+
+\subsection{The {\em repeat-until} Loop}
+
+The {\em repeat-until} loop takes the following form:
+
+\begin{verbatim}
+\REPEAT <stmt> \UNTIL <condition> 
+\end{verbatim}
+
+\noindent{}For example,
+
+\begin{verbatim}
+\REPEAT
+  some processing 
+\UNTIL some condition is met 
+\end{verbatim}
+
+\noindent{}produces
+
+\medskip
+\begin{pseudocode}[display]{}{}
+\REPEAT
+\mbox{some processing}
+\UNTIL \mbox{some condition is met}
+\end{pseudocode}
+
+\subsection{Main Programs and Procedures}
+
+We can describe a main program that calls one (or more) procedures as follows:
+
+\begin{verbatim}
+\begin{pseudocode}{<Name>}{<Parameters>}
+\PROCEDURE{<ProcedureName>}{<ProcedureParameters>}
+   some stuff
+\ENDPROCEDURE
+\MAIN
+  some stuff\\
+  \CALL{<ProcedureName>}{<ActualParameters}>\\
+  more stuff
+\ENDMAIN
+\end{pseudocode}
+\end{verbatim}
+
+Here is a simple example to illustrate the 
+use of a main program calling a procedure.
+The commands
+
+\begin{verbatim}
+\begin{pseudocode}{TemperatureTable}{lower, upper}
+\PROCEDURE{CelsiusToFahrenheit}{c}
+  f \GETS {9c/5} + 32\\
+  \RETURN{f}
+\ENDPROCEDURE 
+\MAIN
+x \GETS lower \\
+\WHILE x \leq upper \DO
+\BEGIN
+ \OUTPUT{x, \CALL{CelsiusToFahrenheit}{x}}\\
+ x \GETS x+1
+\END
+\ENDMAIN
+\end{pseudocode}
+\end{verbatim}
+
+\noindent{}produce the following output:
+
+\begin{pseudocode}{TemperatureTable}{lower, upper}
+\PROCEDURE{CelsiusToFahrenheit}{c}
+  f \GETS {9c/5} + 32\\
+  \RETURN{f}
+\ENDPROCEDURE 
+
+\MAIN
+x \GETS lower \\
+\WHILE x \leq upper \DO
+\BEGIN
+ \OUTPUT{x, \CALL{CelsiusToFahrenheit}{x}}\\
+ x \GETS x+1
+\END
+\ENDMAIN
+\end{pseudocode}
+
+
+\subsection{Comments}
+
+A comment statement may be inserted in an algorithm using the
+following command:
+\begin{verbatim}
+\COMMENT{<stmt>}
+\end{verbatim}
+For example, the commands
+\begin{verbatim}
+A \GETS B\\
+\COMMENT{Now increment the value of $A$}\\
+A \GETS A+1
+\end{verbatim}
+
+\noindent{}produce the output
+
+\medskip
+\begin{pseudocode}[display]{}{}
+A \GETS B\\
+\COMMENT{Now increment the value of $A$}\\
+A \GETS A+1
+\end{pseudocode}
+
+\medskip
+
+Note that comments are assumed to be text. Thus, in order to include
+mathematical expressions in a comment, math mode must be used explicitly.
+
+\subsection{Other Predefined Keywords}
+
+Several other predefined keywords are available.
+We summarize their usage in Table \ref{other predefined keywords}.
+
+\begin{table}[h]
+\caption{Other Predefined Keywords}
+\label{other predefined keywords}
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\hline
+command & output\\
+\hline
+\verb+\LOCAL{list of variables}+&
+$\LOCAL{\mbox{list of variables}}$\\
+\verb+\GLOBAL{list of variables}+&
+$\GLOBAL{\mbox{list of variables}}$\\
+\verb+\EXTERNAL{list of procedures}+&
+$\EXTERNAL{\mbox{list of procedures}}$\\
+\verb+\RETURN{list of values}+&
+$\RETURN{\mbox{list of values}}$\\
+\verb+\OUTPUT{list of values}+&
+$\OUTPUT{\mbox{list of values}}$\\
+\verb+\EXIT+&
+$\EXIT$\\
+\verb+\AND+&
+$\AND$\\
+\verb+\OR+&
+$\OR$\\
+\verb+\NOT+&
+$\NOT$\\
+\verb+\TRUE+&
+$\TRUE$\\
+\verb+\FALSE+&
+$\FALSE$\\
+\verb+\GETS+&
+$\GETS$\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+Also note 
+that all of the keywords 
+\verb+\IF+, \verb+\WHILE+, \verb+\CALL{}{}+, \verb+\NOT+, etc.\
+are available for
+use outside of the \keyword{pseudocode} environment, but they must
+be input in math mode. For example,
+\begin{center}
+\verb+The  $\WHILE$ loop is our friend.+
+\end{center}
+generates
+\begin{center}
+The  $\WHILE$ loop is our friend.
+\end{center}
+
+
+\subsection{Statement Numbering}
+
+Statements can be numbered and given a reference key so that
+they can be referenced in a \LaTeX\ document using a \verb+\ref{}+ command
+(see section 4.2 of \cite{lamport}).
+This is done as follows:
+
+\begin{verbatim}
+\STMTNUM{<space>}{<key>}
+\end{verbatim}
+
+\noindent{}The argument \verb+<space>+ is the amount of space to be left between
+the text and the statement number.  This is a length that is specified by the
+user, and generally will require some experimentation in order for it to look nice.
+The argument \verb+<key>+ is the reference key
+used in the LaTeX\  \verb+\ref{}+ command to refer to the given
+statement.
+
+The default numbering for statements is arabic. However, it can be changed
+by a suitable \verb+\renewcommand{}+.
+An example is provided in the next section.
+
+\section{An example}
+
+The following example demonstrates the use of the
+\keyword{pseudocode} environment to describe a complete
+algorithm, the familiar ``mergesort'' algorithm. The \LaTeX\ input
+
+\begin{verbatim}
+\renewcommand{\thepseudonum}{\roman{pseudonum}}
+\begin{pseudocode}{MergeSort}{n,X}
+\label{MergeSort}
+\COMMENT{Sort the array $X$ of length $n$}\\
+\IF n=2 \THEN
+\BEGIN
+  \IF X[0]>X[1] \THEN
+  \BEGIN
+    T \GETS X[0]\\
+    X[0]\GETS X[1]\\
+    X[1]\GETS T
+  \END
+\END
+\ELSEIF n>2 \THEN
+\BEGIN
+  m\GETS \lfloor n/2 \rfloor\\
+  \FOR i\GETS 0 \TO m-1 \DO A[i] \GETS X[i]\\
+  \FOR i\GETS m \TO n-1 \DO B[i] \GETS X[i]\\
+  \COMMENT{Now sort the subarrays $A$ and $B$}\\
+  \CALL{MergeSort}{m,A}\\
+  \CALL{MergeSort}{n-m,B}\\
+  i\GETS 0\\
+  j\GETS 0\\
+  \FOR k \GETS 0 \TO n-1 \DO
+  \BEGIN
+    \IF A[i] \leq B[j] \THEN
+    \BEGIN
+       X[k]\GETS A[i] \STMTNUM{1in}{st.1}\\
+       i\GETS i+1
+    \END
+    \ELSE
+    \BEGIN
+       X[k]\GETS B[j] \STMTNUM{1.03in}{st.2}\\
+       j\GETS j+1
+    \END
+  \END
+\END
+\end{pseudocode}
+\end{verbatim}
+
+\noindent{}produces the following output:
+
+\renewcommand{\thepseudonum}{\roman{pseudonum}}
+\begin{pseudocode}{MergeSort}{n,X}
+\label{MergeSort}
+\COMMENT{Sort the array $X$ of length $n$}\\
+\IF n=2 \THEN
+\BEGIN
+  \IF X[0]>X[1] \THEN
+  \BEGIN
+    T \GETS X[0]\\
+    X[0]\GETS X[1]\\
+    X[1]\GETS T
+  \END
+\END
+\ELSEIF n>2 \THEN
+\BEGIN
+  m\GETS \lfloor n/2 \rfloor\\
+  \FOR i\GETS 0   \TO m-1 \DO A[i] \GETS X[i]\\
+  \FOR i\GETS m \TO n-1 \DO B[i] \GETS X[i]\\
+  \COMMENT{Now sort the subarrays $A$ and $B$}\\
+  \CALL{MergeSort}{m,A}\\
+  \CALL{MergeSort}{n-m,B}\\
+  i\GETS 0\\
+  j\GETS 0\\
+  \FOR k \GETS 0 \TO n-1 \DO
+  \BEGIN
+    \IF A[i] \leq B[j] \THEN
+    \BEGIN
+       X[k]\GETS A[i] \STMTNUM{1in}{st.1}\\
+       i\GETS i+1
+    \END
+    \ELSE
+    \BEGIN
+       X[k]\GETS B[j] \STMTNUM{1.03in}{st.2}\\
+       j\GETS j+1
+    \END
+  \END
+\END
+\end{pseudocode}
+
+The counter \verb+pseudonum+ keeps track of the statement numbers.
+The style of the counter values can be changed using the method
+described in Section 6.3 of \cite{lamport}. For example,
+we used the command
+\begin{center}
+\verb+ \renewcommand{\thepseudonum}{\roman{pseudonum}} +
+\end{center}
+in our example so that statements were numbered with 
+lowercase Roman numerals.
+We also assigned a label to the algorithm using the
+\verb+\label{}+ command that is described in Section 4.2 of \cite{lamport}.
+Finally, by trial and error, we determined 
+spacing so that the statement numbers would be vertically aligned.
+
+We now give an example of how the numbered statements in the above
+algorithm can be referenced in a \LaTeX document.  The commands
+
+\begin{verbatim}
+On lines (\ref{st.1}) and (\ref{st.2}) of Algorithm 
+\ref{MergeSort}, we determine the $k$th element of the 
+sorted array.
+\end{verbatim}
+
+\noindent{}produce the following output:
+
+\medskip 
+
+\noindent{}On lines (\ref{st.1}) and (\ref{st.2}) of Algorithm \ref{MergeSort},  
+we determine the $k$th element of the 
+sorted array.
+
+%\medskip 
+
+
+
+\section{Framing}
+The \keyword{pseudocode} environment also has an optional parameter, 
+\verb+<frame>+. The complete form of the \keyword{pseudocode} environment is
+
+\begin{verbatim}
+\begin{pseudocode}[<frame>]{<Name>}{<Parameters>}
+  pseudocode constructs
+\end{pseudocode}
+\end{verbatim}
+
+The possible values of  \verb+<frame>+ are:
+\begin{center}
+\begin{tabular}{llll}
+\verb+shadowbox+ &
+\verb+doublebox+ &
+\verb+ovalbox+ &
+\verb+Ovalbox+  \\
+\verb+framebox+ &
+\verb+plain+ &
+\verb+ruled+ &
+\verb+display+
+\end{tabular}
+\end{center}
+The values ending with ``box'' draw various types of frames around the algorithm.
+The value \verb+plain+ is the default and adds no frame to the algorithm.
+The value \verb+display+ is used for displaying sections of code
+without the algorithm name or parameters. Here are some examples with
+input:
+
+\begin{verbatim}
+\begin{pseudocode}[<frame>]{SquareAndMultiply}{x,b,n}
+ \COMMENT{ Compute $x^b \pmod{n}$}\\
+ z\GETS 1\\
+ \WHILE b > 0 \DO
+ \BEGIN
+  z \GETS z^2 \pmod{n} \\
+  \IF b\mbox{ is odd} 
+    \THEN z \GETS z \cdot x  \pmod{n} \\
+    b \GETS \CALL{ShiftRight}{b}
+ \END\\
+ \RETURN{z}
+\end{pseudocode}
+\end{verbatim}
+
+\noindent{}where we give \verb+<frame>+  each of the values described above.
+
+\medskip
+
+\noindent When \verb+<frame>+ is \verb+shadowbox+ we obtain:
+
+\begin{pseudocode}[shadowbox]{SquareAndMultiply}{x,b,n}
+ \COMMENT{ Compute $x^b \pmod{n}$}\\
+ z\GETS 1\\
+ \WHILE b > 0 \DO
+ \BEGIN
+  z \GETS z^2 \pmod{n} \\
+  \IF b\mbox{ is odd} 
+    \THEN z \GETS z \cdot x  \pmod{n} \\
+    b \GETS \CALL{ShiftRight}{b}
+ \END\\
+ \RETURN{z}
+\end{pseudocode}
+
+\noindent When \verb+<frame>+ is \verb+doublebox+ we obtain:
+
+\begin{pseudocode}[doublebox]{SquareAndMultiply}{x,b,n}
+ \COMMENT{ Compute $x^b \pmod{n}$}\\
+ z\GETS 1\\
+ \WHILE b > 0 \DO
+ \BEGIN
+  z \GETS z^2 \pmod{n} \\
+  \IF b\mbox{ is odd} 
+    \THEN z \GETS z \cdot x  \pmod{n} \\
+    b \GETS \CALL{ShiftRight}{b}
+ \END\\
+ \RETURN{z}
+\end{pseudocode}
+
+\noindent When \verb+<frame>+ is \verb+ovalbox+ we obtain:
+
+\begin{pseudocode}[ovalbox]{SquareAndMultiply}{x,b,n}
+ \COMMENT{ Compute $x^b \pmod{n}$}\\
+ z\GETS 1\\
+ \WHILE b > 0 \DO
+ \BEGIN
+  z \GETS z^2 \pmod{n} \\
+  \IF b\mbox{ is odd} 
+    \THEN z \GETS z \cdot x  \pmod{n} \\
+    b \GETS \CALL{ShiftRight}{b}
+ \END\\
+ \RETURN{z}
+\end{pseudocode}
+
+\noindent When \verb+<frame>+ is \verb+Ovalbox+ we obtain:
+
+\begin{pseudocode}[Ovalbox]{SquareAndMultiply}{x,b,n}
+ \COMMENT{ Compute $x^b \pmod{n}$}\\
+ z\GETS 1\\
+ \WHILE b > 0 \DO
+ \BEGIN
+  z \GETS z^2 \pmod{n} \\
+  \IF b\mbox{ is odd} 
+    \THEN z \GETS z \cdot x  \pmod{n} \\
+    b \GETS \CALL{ShiftRight}{b}
+ \END\\
+ \RETURN{z}
+\end{pseudocode}
+
+\noindent When \verb+<frame>+ is \verb+framebox+ we obtain:
+
+\begin{pseudocode}[framebox]{SquareAndMultiply}{x,b,n}
+ \COMMENT{ Compute $x^b \pmod{n}$}\\
+ z\GETS 1\\
+ \WHILE b > 0 \DO
+ \BEGIN
+  z \GETS z^2 \pmod{n} \\
+  \IF b\mbox{ is odd} 
+    \THEN z \GETS z \cdot x  \pmod{n} \\
+    b \GETS \CALL{ShiftRight}{b}
+ \END\\
+ \RETURN{z}
+\end{pseudocode}
+
+\noindent When \verb+<frame>+ is \verb+plain+ or if \verb+[<frame>]+ is omitted we obtain:
+
+\begin{pseudocode}[plain]{SquareAndMultiply}{x,b,n}
+ \COMMENT{ Compute $x^b \pmod{n}$}\\
+ z\GETS 1\\
+ \WHILE b > 0 \DO
+ \BEGIN
+  z \GETS z^2 \pmod{n} \\
+  \IF b\mbox{ is odd} 
+    \THEN z \GETS z \cdot x  \pmod{n} \\
+    b \GETS \CALL{ShiftRight}{b}
+ \END\\
+ \RETURN{z}
+\end{pseudocode}
+
+\noindent When \verb+<frame>+ is \verb+ruled+ we obtain:
+
+\begin{pseudocode}[ruled]{SquareAndMultiply}{x,b,n}
+ \COMMENT{ Compute $x^b \pmod{n}$}\\
+ z\GETS 1\\
+ \WHILE b > 0 \DO
+ \BEGIN
+  z \GETS z^2 \pmod{n} \\
+  \IF b\mbox{ is odd} 
+    \THEN z \GETS z \cdot x  \pmod{n} \\
+    b \GETS \CALL{ShiftRight}{b}
+ \END\\
+ \RETURN{z}
+\end{pseudocode}
+
+
+The purpose of the value \verb+display+ is to allow portions of
+algorithms to be displayed with out the algorithm header. Thus
+for example to display the section of code in the $\WHILE$ loop
+of the $\CALL{SquareAndMultiply}{}$ algorithm one could write
+
+\begin{verbatim}
+\begin{center}
+\begin{minipage}{2in}
+\begin{pseudocode}[display]{}{}
+  z \GETS z^2 \pmod{n} \\
+  \IF b\mbox{ is odd}
+    \THEN z \GETS z \cdot x  \pmod{n}\\
+    b \GETS \CALL{ShiftRight}{b}
+\end{pseudocode}
+\end{minipage}
+\end{center}
+\end{verbatim}
+
+\noindent which would produce the following output:
+
+\begin{center}
+\begin{minipage}{2in}
+\begin{pseudocode}[display]{}{}
+  z \GETS z^2 \pmod{n} \\
+  \IF b\mbox{ is odd}
+    \THEN z \GETS z \cdot x  \pmod{n}\\
+     b \GETS \CALL{ShiftRight}{b}
+\end{pseudocode}
+\end{minipage}
+\end{center}
+
+\begin{thebibliography}{99}
+
+\bibitem{LC}
+M.\ Goossens, F.\ Mittelbach and A.\ Samarin, {\it The \LaTeX Companion}, 
+Addison-Wesley, 1994.
+
+\bibitem{cages}
+D.L.\ Kreher and D.R.\ Stinson,
+{\em Combinatorial Algorithms: Generation, Enumeration and Search},
+CRC Press, 1999.
+
+\bibitem{lamport}
+L.\ Lamport, \LaTeX, 
+{\em A Document Preparation System},
+Addison-Wesley, 1994.
+\end{thebibliography}
+\end{document}
+
+%% END pseudocode.tex

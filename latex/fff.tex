@@ -1,0 +1,281 @@
+\documentclass{beamer}
+\mode<presentation>
+{
+ \usetheme{Marburg}
+\usecolortheme{albatross}
+\usepackage{beamerouterthemeinfolines}
+\usepackage{beamerinnerthemerounded}
+}
+ 
+\usepackage{txfonts}
+\usepackage[cp1250]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[croatian]{babel}
+\usepackage{multimedia}
+\usepackage{fancybox}
+
+\title{ \LaTeX - prezentacija}
+\subtitle{naslov}
+\author{Velimir Baksa}
+\institute[PS]{Proizvodno strojarstvo\\
+ Veleu\v{c}ili\v{s}te u Vara\v{z}dinu}
+
+
+\begin{document}
+
+
+  \begin{frame}
+    \titlepage
+\transboxin[duration=0.2]
+  \end{frame}
+ 
+\begin{frame}
+  \frametitle{Tijelo prezentacije}
+Osnovni korak u  \LaTeX -u jest definirati tip dokumenta koji  \newline želimo
+kreirati. U sluèaju prezentacije to je \emph{beamer}.
+ \emph{Tijelo} svake prezentacije mora zapoèeti sljedeæim naredbama:\newline
+ \begin{itemize}
+
+     \item
+  \alert{$\backslash begin\{frame\}\rightarrow$} poèetak novog slajda\newline
+\pause
+\item
+
+  \vdots
+  \alert{$\backslash end\{frame\}\rightarrow$} kraj slajda.
+ \end{itemize}
+\transboxout[duration=0.2]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Naslovna stranica}
+Naslovna stranica dokumenta definira se u \emph{preambuli}\newline na sljedeæi naæin:\newline
+  \alert{\textbackslash title\{Naslov\}}\newline
+  \alert{\textbackslash subtitle\{Podnaslov\}}\newline
+  \alert{\textbackslash author\{Autor\}}\newline
+  \alert{\textbackslash institute\{Fakultet\}}\newline
+  \alert{\textbackslash date\{Datum\}}\newline\newline
+
+A poziva se unutar prvog slajda naredbom  \alert{\textbackslash titlepage}
+ \transboxin[duration=0.2]
+ \end{frame}
+
+
+\begin{frame}
+ \frametitle{Izgled prezentacije}
+Temu prezentacije takoðer je potrebno definirati u preambuli\newline
+dokumenta. Teme koje oblikuju izgled prezentacije odreðene su svojim imenima. \newline
+Pr: \emph{Boadilla, Bergen, Frankfurt, Hannover, Singapore, Berkley,...} \newline
+a pozivaju se na sljedeæi naæin:\newline
+\alert{\textbackslash usetheme\{ime\}}
+ \transboxout[duration=0.2]
+\end{frame}
+ 
+\begin{frame}
+ \frametitle{Izgled prezentacije}
+Nakon što smo odabrali osnovnu temu možemo promijeniti boju prezentacije\newline
+pozivajuæi:\newline
+  \alert{\textbackslash usecolortheme\{naziv\}}\newline
+ili oblikovati elemente unutar slajda:\newline \alert{\textbackslash useinnertheme\{naziv\}}\newline
+te oblikovati vanjski izgled slajda: \newline \alert{\textbackslash useoutertheme\{naziv\}}
+ \transboxin[duration=0.2]
+\end{frame}
+
+\begin{frame}
+\frametitle{Primjer}
+\begin{itemize}
+\item
+Naslov i podnaslov pojedinog slajda dobivaju se pozivajuæi:\newline
+ \alert{\textbackslash frametitle\{naslov\}}\newline
+ \alert{\textbackslash framesubtitle\{podnaslov\}}
+\pause
+\item
+Primjer kako izgleda jedan slajd u  \LaTeX u\newline
+ \alert{\textbackslash begin\{frame\}}\newline
+  \alert{\textbackslash frametitle\{Moj\_naslov\}}\newline
+  \alert{\textbackslash framesubtitle\{Moj\_podnaslov\}}\newline
+ Ovo je  \alert{\textbackslash emph\{jedan\}} \textbackslash newline slajd\newline
+ na \alert{\textbackslash frame\{kojem\}} mogu napisati moj tekst\newline
+ \alert{\textbackslash end\{frame\}}\newline
+\pause
+\item
+Koji nakon procesiranja izgleda....
+\end{itemize}
+ \transboxin[duration=0.2]
+\end{frame}
+
+\begin{frame}
+\frametitle{Moj naslov}
+\framesubtitle{Moj podnaslov}
+Ovo je \emph{jedan}\newline
+slajd na \frame{kojem} mogu napisati moj tekst.
+ \transboxout[duration=0.2]
+\end{frame}
+
+\begin{frame}
+\frametitle{Struktura teksta}
+Ukoliko tekst koji želimo kreirati sadrži liste, nabrajanja\newline
+ili dijelove koje ne želimo otkriti odjednom koristit æemo okoline\newline
+\emph{itemize i enumerate}.\newline
+Pr;\newline
+ \alert{\textbackslash begin\{itemize\}$\left[\langle+ -\rangle\right]$}\newline
+ \alert{\textbackslash item Prvi}\newline
+ \alert{\textbackslash item Drugi}\newline
+ \alert{\textbackslash item Treæi}\newline
+  \alert{\textbackslash end\{itemize\}}
+ \transboxin[duration=0.2]
+\end{frame}
+
+\begin{frame}
+\frametitle{Struktura teksta}
+A mogli smo i ovako:\newline
+\alert{\textbackslash begin\{itemize\}}\newline
+\alert{\textbackslash item}\newline
+Prvi\newline
+\alert{\textbackslash pause}\newline
+\alert{\textbackslash item}\newline
+Drugi\newline
+\alert{\textbackslash pause}\newline
+\alert{\textbackslash item}\newline
+Treæi\newline
+\alert{\textbackslash end\{itemize\}}
+ \transboxin[duration=0.2]
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Struktura teksta}
+\begin{itemize}[<+ ->]  
+\item Prvi
+\item Drugi
+\item Treæi\newline\newline
+\item Ili ako baš želite......
+\end{itemize}
+ \transboxout[duration=0.2]
+\end{frame}
+
+\begin{frame}
+ \frametitle{Struktura teksta}
+ \begin{itemize}[<+ -| alert@+>]
+\item Prva naglašena reèenica
+\item Druga naglašena reèenica
+\item Treæa naglašena reèenica\newline\newline
+\end{itemize}
+\uncover<4-> {
+Što smo postigli sa \alert{\textbackslash begin\{itemize\}$\left[\langle+ -| alert@\rangle +\right]$....}
+}
+ \transboxin[duration=0.2]
+\end{frame}
+
+\begin{frame}
+ \frametitle{Struktura teksta}
+Enumerate i itemize mogu se koristiti i jedna unutar druge\newline
+posebno za liste koje se sastoje od više dijelova:\newline
+ \alert{\textbackslash begin\{enumerate\}}\newline
+ \alert{\textbackslash item$\langle 1 - \rangle$}  Prva cjelina\newline
+ \alert{\textbackslash item$\langle 2 - \rangle$}  Druga cjelina\newline
+ \alert{\textbackslash begin\{itemize\}}\newline
+ \alert{\textbackslash item} Prvi dio\newline
+ \alert{\textbackslash item$\langle 3 - \rangle$}  Drugi dio\newline
+ \alert{\textbackslash item$\langle 2 - \rangle$}  Treæi dio\newline
+ \alert{\textbackslash end\{itemize\}}\newline
+ \alert{\textbackslash item$\langle 5 - \rangle$}  Treæa cjelina\newline
+ \alert{\textbackslash end\{enumerate\}}
+ \transboxin[duration=0.2]
+\end{frame}
+
+
+\begin{frame}
+ \frametitle{Struktura teksta}
+\begin{enumerate}
+\item <1-> Prva cjelina\newline
+\item <2-> Druga cjelina\newline
+\begin{itemize} 
+\item Prvi dio\newline
+\item <3->Drugi dio\newline
+\item <2->Treæi dio\newline
+\end{itemize}
+\item <5-> Treæa cjelina\newline
+\end{enumerate}
+ \transboxout[duration=0.2]
+\end{frame}
+
+\begin{frame}
+ \frametitle{Blokovi}
+ Ukoliko želimo neki tekst posebno naglasiti, pozvati æemo sljedeæu \emph{okolinu}: \newline
+ \alert{$\textbackslash begin\{block\}\{Naslov\}$}\newline
+ $\vdots$ \newline
+ \alert{$\backslash end\{block\}$}\newline
+
+koja kreira blokove unutar slajdova na sljedeæi naèin....
+ \transboxin[duration=0.2]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Blokovi}
+\begin{block}{Prvi blok}
+\begin{itemize}
+ \item Kako izgleda prvi blok
+\pause
+ \item Unutar kojeg se nalazi tekst
+ \end{itemize}
+ \end{block}
+
+\begin{block}{Drugi blok}
+ \begin{itemize}
+ \item Kako izgleda drugi blok
+ \end{itemize}
+\end{block}
+\transboxout[duration=0.2]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Teorem}
+\begin{theorem}[Neki teorem]
+Ovo je \textbf{neki} teorem
+\end{theorem}
+\begin{proof}[Neki teorem]
+A \textbf{ovo} je dokaz!
+\end{proof}
+A to smo postigli sa:\newline 
+ \alert{$\textbackslash begin\{theorem\}\{Naslov\}$}\newline
+ $\vdots$ \newline
+ \alert{$\backslash end\{theorem\}$} i\newline \newline
+ \alert{$\textbackslash begin\{proof\}$} \newline
+ $\vdots$ \newline
+ \alert{$\backslash end\{proof\}$}
+\transboxin[duration=0.2]
+\end{frame}
+
+\begin{frame}
+\frametitle{\alert{za kraj...}}
+\begin{itemize}
+\item
+\begin{align}
+A+B&=C\uncover<2->{&=D}\uncover<3->{&=E}
+\end{align}
+\end{itemize}
+\begin{itemize}
+\item
+Mogu koristiti \shadowbox{uokvirenu} kutiju 
+\end{itemize}
+\transboxout[duration=0.2]
+\end{frame}
+\begin{frame}
+\only<+>{Ova reèenica pojavljuje se samo na ovom slajdu .}
+\uncover<+->{   
+Ova ju mijenja na sljedeæem.} 
+\textbf<+>{ \textcolor{blue}{Neke se ponavljaju. }}
+\transboxin[duration=0.2]
+\end{frame}
+\begin{frame}
+  \frametitle{\alert{za kraj...}}
+Jedan mali klip...
+   \movie[width=7cm, height=5cm ]{image}{pijanirus.avi}
+\transboxout[duration=0.2]
+\end{frame}
+
+\end{document}
+

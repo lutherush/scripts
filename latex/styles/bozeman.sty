@@ -1,0 +1,463 @@
+% ******************************This is procltex.sty **************************
+%
+%
+% This is procltex.sty, a macro file to create the correct size document.
+%
+\typeout{Document Style `procltex'. Released  19 August 1994}
+%
+% This first part is needed for compatability with the myriad of
+% differnt versions of LaTeX floating around at the time of this 
+% writing
+%
+\ifx\undefined\tenrm
+\def\tenrm{\fontfamily{cmr}\fontsize{10}{10pt}\selectfont}
+\typeout{}
+\typeout{I see you are using a LaTeX which incorporates the New Font} 
+\typeout{Selection Scheme. I'll define tenrm for you.}
+\typeout{}
+\fi
+\ifx\undefined\mathrm
+\def\mathrm{\rm}
+\typeout{}
+\typeout{I see you don't like the mathrm command. I'll}
+\typeout{go ahead and redefine it for you.}
+\typeout{}
+\fi
+%
+% That should be enough definitions for now..
+%
+\def\@ptsize{0} \@namedef{ds@11pt}{\def\@ptsize{1}}
+\@namedef{ds@12pt}{\def\@ptsize{2}} 
+\def\ds@twoside{\@twosidetrue \@mparswitchtrue} \def\ds@draft{\overfullrule
+5pt} 
+\@options
+% At this point, we add in what used to be art10.sty with some
+% modifications
+\lineskip 1pt
+\normallineskip 1pt
+\def\baselinestretch{1}
+
+\def\@normalsize{\@setsize\normalsize{12pt}\xpt\@xpt
+\abovedisplayskip 10\p@ plus2\p@ minus5\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip  \z@ plus3\p@
+\belowdisplayshortskip  6\p@ plus3\p@ minus3\p@
+\let\@listi\@listI}
+
+\def\small{\@setsize\small{11pt}\ixpt\@ixpt
+\abovedisplayskip 8.5\p@ plus3\p@ minus4\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ plus2\p@
+\belowdisplayshortskip 4\p@ plus2\p@ minus2\p@
+\def\@listi{\leftmargin\leftmargini
+\topsep 4\p@ plus2\p@ minus2\p@\parsep 2\p@ plus\p@ minus\p@
+\itemsep \parsep}}
+
+\def\footnotesize{\@setsize\footnotesize{9.5pt}\viiipt\@viiipt
+\abovedisplayskip 6\p@ plus2\p@ minus4\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ plus\p@
+\belowdisplayshortskip 3\p@ plus\p@ minus2\p@
+\def\@listi{\leftmargin\leftmargini
+\topsep 3\p@ plus\p@ minus\p@\parsep 2\p@ plus\p@ minus\p@
+\itemsep \parsep}}
+
+\def\scriptsize{\@setsize\scriptsize{8pt}\viipt\@viipt}
+\def\tiny{\@setsize\tiny{6pt}\vpt\@vpt}
+\def\large{\@setsize\large{14pt}\xiipt\@xiipt}
+\def\Large{\@setsize\Large{18pt}\xivpt\@xivpt}
+\def\LARGE{\@setsize\LARGE{22pt}\xviipt\@xviipt}
+\def\huge{\@setsize\huge{25pt}\xxpt\@xxpt}
+\def\Huge{\@setsize\Huge{30pt}\xxvpt\@xxvpt}
+
+\normalsize
+
+\evensidemargin 63pt
+\marginparwidth 90pt
+\oddsidemargin=1.1in
+\topmargin=.725truein
+\textheight=7.125truein
+\textwidth=4.5truein
+\headsep=16pt
+
+
+\marginparsep 11pt
+
+\headheight 12pt
+
+\topskip = 10pt
+
+\footskip 30pt
+
+\columnsep 10pt
+\columnseprule 0pt
+
+\footnotesep 6.65pt
+
+\skip\footins 9pt plus 4pt minus 2pt
+
+\floatsep 12pt plus 2pt minus 2pt
+
+\textfloatsep 20pt plus 2pt minus 4pt
+
+\intextsep 12pt plus 2pt minus 2pt
+
+\@maxsep 20pt
+
+\dblfloatsep 12pt plus 2pt minus 2pt
+
+\dbltextfloatsep 20pt plus 2pt minus 4pt
+
+\@dblmaxsep 20pt
+
+\@fptop 0pt plus 1fil
+
+\@fpsep 8pt plus 2fil
+\@fpbot 0pt plus 1fil
+
+\@dblfptop 0pt plus 1fil
+
+\@dblfpsep 8pt plus 2fil
+\@dblfpbot 0pt plus 1fil
+
+\marginparpush 5pt
+
+\parskip 0pt plus 1pt
+
+\parindent 15pt
+
+\partopsep 2pt plus 1pt minus 1pt
+
+\@lowpenalty   51
+\@medpenalty  151
+\@highpenalty 301
+
+\@beginparpenalty -\@lowpenalty
+
+\@endparpenalty   -\@lowpenalty
+
+\@itempenalty     -\@lowpenalty
+
+% Some older version of LaTeX don't like the \reset@font command
+
+\ifx\undefined\reset@font
+\def\section{\@startsection {section}{1}{\z@}{-3.5ex plus-1ex minus
+    -.2ex}{2.3ex plus.2ex}{\Large\bf}}
+\def\subsection{\@startsection{subsection}{2}{\z@}{-3.25ex plus-1ex
+    minus-.2ex}{1.5ex plus.2ex}{\large\bf}}
+\def\subsubsection{\@startsection{subsubsection}{3}{\z@}{-3.25ex plus
+    -1ex minus-.2ex}{1.5ex plus.2ex}{\normalsize\bf}}
+\def\paragraph{\@startsection
+     {paragraph}{4}{\z@}{3.25ex plus1ex minus.2ex}{-1em}{\normalsize\bf}}
+\def\subparagraph{\@startsection
+     {subparagraph}{4}{\parindent}{3.25ex plus1ex minus
+     .2ex}{-1em}{\normalsize\bf}}
+\else
+\def\section{\@startsection {section}{1}{\z@}{-3.5ex plus-1ex minus
+    -.2ex}{2.3ex plus.2ex}{\reset@font\Large\bf}}
+\def\subsection{\@startsection{subsection}{2}{\z@}{-3.25ex plus-1ex
+    minus-.2ex}{1.5ex plus.2ex}{\reset@font\large\bf}}
+\def\subsubsection{\@startsection{subsubsection}{3}{\z@}{-3.25ex plus
+    -1ex minus-.2ex}{1.5ex plus.2ex}{\reset@font\normalsize\bf}}
+\def\paragraph{\@startsection
+     {paragraph}{4}{\z@}{3.25ex plus1ex minus.2ex}{-1em}{\reset@font
+     \normalsize\bf}}
+\def\subparagraph{\@startsection
+     {subparagraph}{4}{\parindent}{3.25ex plus1ex minus
+     .2ex}{-1em}{\reset@font\normalsize\bf}}
+\fi
+
+\setcounter{secnumdepth}{3}
+
+\def\appendix{\par
+  \setcounter{section}{0}
+  \setcounter{subsection}{0}
+  \def\thesection{\Alph{section}}}
+
+\leftmargini 25pt
+\leftmarginii 22pt
+\leftmarginiii 18.7pt
+\leftmarginiv 17pt
+\leftmarginv 10pt
+\leftmarginvi 10pt
+
+\leftmargin\leftmargini
+\labelsep 5pt
+\labelwidth\leftmargini\advance\labelwidth-\labelsep
+
+\def\@listI{\leftmargin\leftmargini \parsep 4\p@ plus2\p@ minus\p@
+\topsep 8\p@ plus2\p@ minus4\p@
+\itemsep 4\p@ plus2\p@ minus\p@}
+
+\let\@listi\@listI
+\@listi
+
+\def\@listii{\leftmargin\leftmarginii
+   \labelwidth\leftmarginii\advance\labelwidth-\labelsep
+   \topsep 4\p@ plus2\p@ minus\p@
+   \parsep 2\p@ plus\p@ minus\p@
+   \itemsep \parsep}
+
+\def\@listiii{\leftmargin\leftmarginiii
+    \labelwidth\leftmarginiii\advance\labelwidth-\labelsep
+    \topsep 2\p@ plus\p@ minus\p@
+    \parsep \z@ \partopsep \p@ plus\z@ minus\p@
+    \itemsep \topsep}
+
+\def\@listiv{\leftmargin\leftmarginiv
+     \labelwidth\leftmarginiv\advance\labelwidth-\labelsep}
+
+\def\@listv{\leftmargin\leftmarginv
+     \labelwidth\leftmarginv\advance\labelwidth-\labelsep}
+
+\def\@listvi{\leftmargin\leftmarginvi
+     \labelwidth\leftmarginvi\advance\labelwidth-\labelsep}
+
+
+
+\def\labelenumi{\arabic{enumi}.} 
+\def\theenumi{\arabic{enumi}} 
+\def\labelenumii{(\alph{enumii})}
+\def\theenumii{\alph{enumii}}
+\def\p@enumii{\theenumi}
+\def\labelenumiii{\roman{enumiii}.}
+\def\theenumiii{\roman{enumiii}}
+\def\p@enumiii{\theenumi(\theenumii)}
+\def\labelenumiv{\Alph{enumiv}.}
+\def\theenumiv{\Alph{enumiv}} 
+\def\p@enumiv{\p@enumiii\theenumiii}
+
+\def\labelitemi{$\bullet$}
+\def\labelitemii{\bf --}
+\def\labelitemiii{$\ast$}
+\def\labelitemiv{$\cdot$}
+
+\def\verse{\let\\=\@centercr 
+ \list{}{\itemsep\z@ \itemindent -1.5em\listparindent \itemindent 
+ \rightmargin\leftmargin\advance\leftmargin 1.5em}\item[]}
+\let\endverse\endlist
+\def\quotation{\list{}{\listparindent 1.5em
+ \itemindent\listparindent
+ \rightmargin\leftmargin \parsep 0pt plus 1pt}\item[]}
+\let\endquotation=\endlist
+\def\quote{\list{}{\rightmargin\leftmargin}\item[]}
+\let\endquote=\endlist
+
+\def\descriptionlabel#1{\hspace\labelsep \bf #1}
+\def\description{\list{}{\labelwidth\z@ \itemindent-\leftmargin
+ \let\makelabel\descriptionlabel}}
+\let\enddescription\endlist
+
+
+\def\theequation{\thesection.\arabic{equation}}
+
+
+\def\titlepage{\@restonecolfalse\if@twocolumn\@restonecoltrue\onecolumn
+ \else \newpage \fi \thispagestyle{empty}\c@page\z@}
+\def\endtitlepage{\if@restonecol\twocolumn \else \newpage \fi}
+
+\arraycolsep 5pt \tabcolsep 6pt \arrayrulewidth .4pt \doublerulesep 2pt 
+\tabbingsep \labelsep 
+
+\skip\@mpfootins = \skip\footins
+\fboxsep = 3pt \fboxrule = .4pt 
+
+\newcounter{part}
+\newcounter{section}
+\newcounter{subsection}[section]
+\newcounter{subsubsection}[subsection]
+\newcounter{paragraph}[subsubsection]
+\newcounter{subparagraph}[paragraph]
+
+\def\thepart{\Roman{part}} \def\thesection {\arabic{section}}
+\def\thesubsection {\thesection.\arabic{subsection}}
+\def\thesubsubsection {\thesubsection .\arabic{subsubsection}}
+\def\theparagraph {\thesubsubsection.\arabic{paragraph}}
+\def\thesubparagraph {\theparagraph.\arabic{subparagraph}}
+
+\def\@pnumwidth{1.55em}
+\def\@tocrmarg {2.55em}
+\def\@dotsep{4.5}
+\setcounter{tocdepth}{3}
+
+\def\tableofcontents{\section*{Contents\@mkboth{CONTENTS}{CONTENTS}}
+ \@starttoc{toc}}
+\def\l@part#1#2{\addpenalty{\@secpenalty}
+ \addvspace{2.25em plus 1pt} \begingroup
+ \@tempdima 3em \parindent \z@ \rightskip \@pnumwidth \parfillskip
+-\@pnumwidth 
+ {\large \bf \leavevmode #1\hfil \hbox to\@pnumwidth{\hss #2}}\par
+ \nobreak \endgroup}
+\def\l@section#1#2{\addpenalty{\@secpenalty} \addvspace{1.0em plus 1pt}
+\@tempdima 1.5em \begingroup
+ \parindent \z@ \rightskip \@pnumwidth 
+ \parfillskip -\@pnumwidth 
+ \bf \leavevmode #1\hfil \hbox to\@pnumwidth{\hss #2}\par
+ \endgroup}
+\def\l@subsection{\@dottedtocline{2}{1.5em}{2.3em}}
+\def\l@subsubsection{\@dottedtocline{3}{3.8em}{3.2em}}
+\def\l@paragraph{\@dottedtocline{4}{7.0em}{4.1em}}
+\def\l@subparagraph{\@dottedtocline{5}{10em}{5em}}
+\def\listoffigures{\section*{List of Figures\@mkboth
+ {LIST OF FIGURES}{LIST OF FIGURES}}\@starttoc{lof}}
+\def\l@figure{\@dottedtocline{1}{1.5em}{2.3em}}
+\def\listoftables{\section*{List of Tables\@mkboth
+ {LIST OF TABLES}{LIST OF TABLES}}\@starttoc{lot}}
+\let\l@table\l@figure
+
+
+\def\thebibliography#1{\section*{References\@mkboth
+ {REFERENCES}{REFERENCES}}\list
+ {[\arabic{enumi}]}{\settowidth\labelwidth{[#1]}\leftmargin\labelwidth
+ \advance\leftmargin\labelsep\advance\itemsep by.15cm
+ \usecounter{enumi}}
+ \def\newblock{\hskip .11em plus .33em minus -.07em}
+ \sloppy
+ \sfcode`\.=1000\relax}
+\let\endthebibliography=\endlist
+ 
+
+\newif\if@restonecol
+\def\theindex{\@restonecoltrue\if@twocolumn\@restonecolfalse\fi
+\columnseprule \z@
+\columnsep 35pt\twocolumn[\section*{Index}]
+ \@mkboth{INDEX}{INDEX}\thispagestyle{plain}\parindent\z@
+ \parskip\z@ plus .3pt\relax\let\item\@idxitem}
+\def\@idxitem{\par\hangindent 40pt}
+\def\subitem{\par\hangindent 40pt \hspace*{20pt}}
+\def\subsubitem{\par\hangindent 40pt \hspace*{30pt}}
+\def\endtheindex{\if@restonecol\onecolumn\else\clearpage\fi}
+\def\indexspace{\par \vskip 10pt plus 5pt minus 3pt\relax}
+
+\def\footnoterule{\kern-3\p@ 
+ \hrule width .4\columnwidth 
+ \kern 2.6\p@} 
+
+\long\def\@makefntext#1{\parindent 1em\noindent 
+ \hbox to 1.8em{\hss$^{\@thefnmark}$}#1}
+
+
+\setcounter{topnumber}{2}
+\def\topfraction{.7}
+\setcounter{bottomnumber}{1}
+\def\bottomfraction{.3}
+\setcounter{totalnumber}{3}
+\def\textfraction{.2}
+\def\floatpagefraction{.5}
+\setcounter{dbltopnumber}{2}
+\def\dbltopfraction{.7}
+\def\dblfloatpagefraction{.5}
+
+\long\def\@makecaption#1#2{
+ \vskip 10pt 
+ \setbox\@tempboxa\hbox{#1: #2}
+ \ifdim \wd\@tempboxa >\hsize \unhbox\@tempboxa\par \else \hbox
+to\hsize{\hfil\box\@tempboxa\hfil} 
+ \fi}
+
+
+\newcounter{figure}[section]
+\def\thefigure{\thesection.\@arabic\c@figure}
+\def\fps@figure{tbp}
+\def\ftype@figure{1}
+\def\ext@figure{lof}
+\def\fnum@figure{Figure \thefigure}
+\def\figure{\@float{figure}}
+\let\endfigure\end@float
+\@namedef{figure*}{\@dblfloat{figure}}
+\@namedef{endfigure*}{\end@dblfloat}
+\newcounter{table}[section]
+\def\thetable{\thesection.\@arabic\c@table}
+\def\fps@table{tbp}
+\def\ftype@table{2}
+\def\ext@table{lot}
+\def\fnum@table{Table \thetable}
+\def\table{\@float{table}}
+\let\endtable\end@float
+\@namedef{table*}{\@dblfloat{table}}
+\@namedef{endtable*}{\end@dblfloat}
+
+
+
+%\def\school#1{\def\@school{\sl #1}}
+%\def\@school{}
+\def\school#1{\sl #1}
+\def\maketitle{\par
+ \begingroup
+ \def\thefootnote{\fnsymbol{footnote}}
+ \if@twocolumn 
+ \twocolumn[\@maketitle] 
+ \else \newpage
+ \global\@topnum\z@ \@maketitle \fi\thispagestyle{empty}\@thanks
+ \endgroup
+ \setcounter{footnote}{0}
+% \let\school\relax
+% \let\@school\relax
+ \let\maketitle\relax
+ \let\@maketitle\relax
+ \gdef\@thanks{}\gdef\@author{}\gdef\@title{}\let\thanks\relax}
+\def\@maketitle{\newpage
+ \null
+ \vspace*{-1.1cm} \begin{center}
+ {\bf \@title \par} \vskip 1.5em { \lineskip .5em
+\begin{tabular}[t]{c}
+\@author 
+\end{tabular}\par}
+%\vspace*{.2in}
+%\@school
+\end{center}
+ \par
+ \vspace*{-.2cm}} 
+\def\abstract{}
+\def\endabstract{\if@twocolumn\else\endquotation\fi}
+
+\mark{{}{}} 
+
+\if@twoside \def\ps@headings{\let\@mkboth\markboth
+\def\@oddfoot{}\def\@evenfoot{}\def\@evenhead{\rm \thepage\hfil \sl
+\leftmark}\def\@oddhead{\hbox{}\sl \rightmark \hfil
+\rm\thepage}\def\sectionmark##1{\markboth {\uppercase{\ifnum \c@secnumdepth
+>\z@
+ \thesection\hskip 1em\relax \fi ##1}}{}}\def\subsectionmark##1{\markright
+{\ifnum \c@secnumdepth >\@ne
+ \thesubsection\hskip 1em\relax \fi ##1}}}
+\else \def\ps@headings{\let\@mkboth\markboth
+\def\@oddfoot{}\def\@evenfoot{}\def\@oddhead{\hbox {}\sl \rightmark \hfil
+\rm\thepage}\def\sectionmark##1{\markright {\uppercase{\ifnum \c@secnumdepth
+>\z@
+ \thesection\hskip 1em\relax \fi ##1}}}}
+\fi
+\def\ps@myheadings{\let\@mkboth\@gobbletwo
+\def\@oddhead{\ifnum\thepage>1 \ifodd\thepage
+    \hbox{}\hfil \tenrm\rightmark \hfil
+  \else
+    \hbox{}\hfil \tenrm\leftmark \hfil
+  \fi\fi}
+\def\@oddfoot{}\def\@evenhead{\rm \thepage\hfil\sl\leftmark\hbox
+{}}\def\@evenfoot{}\def\sectionmark##1{}\def\subsectionmark##1{}}
+
+
+\def\today{\ifcase\month\or
+ January\or February\or March\or April\or May\or June\or
+ July\or August\or September\or October\or November\or December\fi
+ \space\number\day, \number\year}
+
+\ps@plain \pagenumbering{arabic} \onecolumn \if@twoside\else\raggedbottom\fi 
+\def\Large{}
+\def\LARGE{}
+
+% Finally we define some environments that will be used
+
+\pagestyle{myheadings}
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+\renewcommand{\thetable}{\thesection.\arabic{table}}
+\newtheorem{algorithm}{Algorithm}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+
+% End of style file

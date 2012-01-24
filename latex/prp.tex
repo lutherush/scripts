@@ -1,0 +1,670 @@
+\documentclass[10pt]{beamer}
+\mode<presentation>
+
+\beamertemplateshadingbackground{red!120}{yellow}
+ 
+\usetheme{shadow}
+\usepackage{beamerthemesplit} 
+%\usepackage{color}  
+%\usepackage{hyperref}
+\usepackage{txfonts}
+\usepackage[cp1250]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[croatian]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{fancybox}
+\usepackage[pdftex]{graphicx}
+%\newtheorem{teorem}{Teorem}
+%\newtheorem{propozicija}[teorem]{Propozicija}
+%\newtheorem{korolar}[teorem]{Korolar}
+
+\title{\LaTeX }
+\author{Velimir Baksa}
+\date{\today}
+
+\begin{document}
+
+
+\begin{frame}[plain]
+ \transblindshorizontal\titlepage
+\end{frame}
+
+
+\begin{frame}
+
+\transwipe
+\frametitle{O \LaTeX u}
+
+\textbf{\LaTeX}{} je slovoslagarski program Lesliea Lamporta koji omoguæuje slaganje najraznovrsnijih tekstova, njihovu cjelokupnu pripremu za tisak i ispisivanje.
+\begin{itemize}
+\pause
+\item<1-> pojavio se 1986. godine kao proširenje programa \TeX{} kojeg je napisao Donald Knuth 
+\pause
+\item<2-> za razliku od tekst procesora, \LaTeX {} zahtijeva deklariranje logièke strukture dokumenta te tako brine o izgledu samog dokumenta i onemoguæuje stvaranje grešaka
+\pause
+\item<3-> konaèni izgled dokumenta moguæe je vidjeti na ekranu tek nakon što ga \LaTeX{}  procesira
+\end{itemize}
+\pause
+\begin{center}
+\setlength{\unitlength}{1.0cm}
+\fbox{
+\begin{picture}(9,3)(-3,-3)
+\put(-3,-2.5){\colorbox{white}{\makebox(2,2.2)[t]{WYSIWYG}}}
+\put(-2.4,-1.4){\footnotesize formatirani}
+\put(-2.1,-1.8){\footnotesize tekst}
+\put(-1.9,-2.7){\vector(0,-1){0.3}}
+\put(-1.8,-3){\scriptsize ispis}
+\put(-0.5,-3){\scriptsize TEKST PROCESOR}
+\put(-0.7,-2.4){\line(1,0){0.6}}
+\put(-0.1,-2.4){\line(0,1){2.1}}
+\put(-0.1,-0.3){\vector(-1,0){0.6}}
+\put(-0.5,-2.6){\scriptsize ureðivanje}
+\put(2,-1.1){\colorbox{white}{\makebox(2,0.8)}}
+\put(2.2,-0.6){\footnotesize tekst dokumenta}
+\put(2.7,-1.0){\footnotesize i naredbe}
+\put(3.2,-1.3){\vector(0,-1){0.3}}
+\put(2,-2.5){\colorbox{white}{\makebox(2,0.8){\footnotesize formatirani tekst}}}
+\put(3.2,-2.7){\vector(0,-1){0.3}}
+\put(3.3,-3){\scriptsize ispis}
+\put(5,-3){\footnotesize\LaTeX}
+\put(4.3,-2.1){\line(1,0){0.6}}
+\put(4.9,-2.1){\line(0,1){1.4}}
+\put(4.9,-0.7){\vector(-1,0){0.6}}
+\put(4.5,-2.3){\scriptsize ureðivanje}
+\put(3.3,-1.5){\scriptsize formatiranje}
+\end{picture}
+}
+\end{center}
+\end{frame}
+
+\begin{frame}
+
+\transwipe
+    \frametitle{Prednosti \LaTeX a}
+\begin{itemize}
+\item<1-> najveæa prednost \LaTeX a{} je priprema zahtjevnih tekstova koji sadrže složene matematièke formule i razlièite nestandardne simbole koje je vrlo teško napraviti pomoæu obiènih tekst procesora
+\item<2-> svakome omoguæuje slaganje i izradu profesionalno dizajniranih dokumenata
+\item<3-> korištenjem jednostavnih naredbi omoguæena je izrada razlièitih kompleksnih struktura 
+\item<4-> izraðeni dokumenti su kvalitetno oblikovani, èitljivi su i razumljivi 
+\item<5-> slovoslagarski stroj \TeX{} kojeg \LaTeX{} koristi je besplatan, njegove izvorne datoteke su prenosive pa \TeX{} i \LaTeX{} rade jednako na svim kompjuterskim platformama
+\item<6-> zbog svojih moguænosti \LaTeX{} je postao popularan tako da ga koriste mnogi znanstvenici
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+
+
+\transwipe\frametitle{\LaTeX{} naredbe }
+Datoteke u \LaTeX u kreiraju se bilo kojim tekst editorom i to tako da
+se unosi tekst našeg dokumenta i posebne naredbe koje \LaTeX u govore kako da složi tekst, njima
+se opisuje logièka struktura dokumenta
+\pause
+\begin{itemize}
+\item<1-> naredbe zapoèinju znakom {} {\color{blue}\textbf{\textbackslash}} {} iza kojeg dolazi ime naredbe ili toèno jedan posebni znak
+\pause
+\item<2-> ime naredbe se sastoji iskljuèivo od slova, a završava razmakom, brojem ili nekim drugim znakom koji nije slovo
+\pause
+\item<3->  uz imena pojedinih naredbi potrebno je dodati odgovarajuæe parametre - argumente,  takve naredbe dopuštaju korištenje raznih opcija, a imaju sljedeæi oblik 
+\begin{center}
+{\color{green}\verb+\ime_naredbe[opcije]{argument}+ }
+\end{center}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\transwipe
+    \frametitle{Struktura ulaznih datoteka}
+\begin{itemize}
+\item<1-> ulazna datoteka za neki \LaTeX{} dokument zapoèinje informacijom o vrsti dokumenta koji želimo napraviti 
+
+{\color{blue}\begin{verbatim}
+\documentclass[opcije]{tip_dokumenta}
+\end{verbatim}}
+
+\item<2-> nakon toga se mogu staviti naredbe koje uèitavaju makro pakete kojima se proširuju moguænosti \LaTeX a
+
+{\color{blue}\begin{verbatim}
+\usepackage[opcije]{naziv_paketa}
+\end{verbatim}}
+
+\item<3-> tekst koji upisujemo dolazi izmeðu sljedeæih naredbi koje oznaèavaju poèetak odnosno kraj dokumenta
+
+{\color{blue}\begin{verbatim}
+\begin{document}
+
+\end{document}
+\end{verbatim}}
+\vspace{0.2 cm}
+\item<4-> Dio izmeðu \verb+\documentclass i \begin{document}+ nazivamo {\color{yellow}\textit{preambula} ili \textit{zaglavlje}} dokumenta dok ostatak zovemo {\color{yellow}\textit{tijelo}} dokumenta.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\transwipe
+    \frametitle{Primjer \LaTeX{} datoteke}
+
+%Sadržaj neke ulazne datoteke može izgledati ovako:
+
+\begin{verbatim}
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[croatian]{babel}
+\usepackage[cp1250]{inputenc} 
+
+\begin{document}
+ 
+ Ovdje se upisuje tekst dokumenta zajedno 
+ s razlièitim naredbama.
+ 
+\end{document}
+\end{verbatim} 
+\end{frame}
+
+
+\begin{frame}[fragile]
+\transwipe
+    \frametitle{Tipovi dokumenata, makro paketi, opcije ...}
+\begin{itemize}
+\item<1-> {\color{purple}Tip dokumenta} odabiremo ovisno o vrsti teksta koji želimo napraviti. Pri tome postoje razne opcije kojima utjeèemo na izgled cijelog dokumenta.
+\begin{center}
+\scriptsize
+\begin{tabular}{|l|l|}
+\hline \textbf{Tipovi dokumenata} & \textbf{Neke opcije} \\ 
+\hline
+\hline article  - za pisanje èlanaka, kraæih tekstova ... & 10pt, 11pt, ... - velièina osnovnog fonta \\ 
+\hline report - za tekstove s više poglavlja, manje knjige, ... & a4paper, letterpaper, ... - velièina papira \\ 
+\hline book - za pisanje knjiga & twoside - dvostrani ispis \\ 
+\hline 
+\end{tabular} 
+\end{center}
+\pause
+\vspace{0.2 cm}
+\item<2-> Za ukljuèivanje grafike, teksta u boji ili za korištenje sliènih dodataka, u \LaTeX u {} postoje razlièiti {\color{purple}makro paketi}. Jedan od znaèajnijih makro paketa je svakako {} {\color{violet}\textit{babel}} {} koji omoguæuje pisanje dokumenta na jeziku razlièitom od engleskog.  
+\vspace{0.1 cm} 
+\begin{center}
+\footnotesize\verb \usepackage[croatian]{babel}  \\
+\verb \usepackage[cp1250]{inputenc} 
+\pause
+\end{center}
+U prethodnim naredbama paketom {} {\color{violet}\textit{babel}} {} omoguæeno je pisanje teksta na hrvatskom jeziku, a paketom {} {\color{violet}\textit{inputenc}} {} postignuto je pisanje hrvatskih slova izravno s tipkovnice. Ako ne ukljuèimo navedene pakete, hrvatska slova možemo pisati naredbama:
+\end{itemize}
+\pause
+\begin{center}
+{\color{yellow}
+È  \verb \v{C} \hspace{0.2 cm} Æ  \verb \'{C} \hspace{0.2 cm} Ð \verb \DJ{} \hspace{0.2 cm}   
+Š \verb \v{S} \hspace{0.2 cm}  Ž \verb \v{Z} \hspace{0.2 cm} \\ 
+è \verb \v{c} \hspace{0.2 cm} æ  \verb \v'{c} \hspace{0.2 cm} ð \verb \dj{} \hspace{0.2 cm} 
+š \verb \v{s} \hspace{0.2 cm} ž \verb \v{z}   }
+\end{center}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\transwipe\frametitle{Naslov dokumenta, poglavlja ... }
+\begin{itemize}
+\item<1-> {\color{purple}naslov dokumenta} definira se naredbama {\color{blue}\footnotesize\verb+\title, \author,+ \verb \date, } {} \normalsize 
+\\a poziva se naredbom {\color{blue}\footnotesize\verb \maketitle }
+\pause
+\item<2-> dokumente tipa {} {\color{violet}\small\textit{article}} {}  \normalsize dijelimo na {\color{purple}poglavlja, sekcije i podsekcije} naredbama {\color{blue}\footnotesize\verb+\section, \subsection, \paragraph+ }
+
+\pause
+\item<3-> za dokumente tipa {}  {\color{violet}\small\textit{book}} {}  \normalsize i {}
+ {\color{violet}\small\textit{report}} {}  \normalsize postoje naredbe {\color{blue}\footnotesize\verb+\part, \chapter+ }
+\pause
+
+ \begin{columns}[t]
+   \column{.3\textwidth}
+\scriptsize
+\begin{verbatim}
+\documentclass[10pt,a4paper]{article}
+\usepackage[croatian]{babel}
+\usepackage[cp1250]{inputenc} 
+
+\title{NASLOV}
+\author{ime i prezime}
+\date{danas}
+
+\begin{document}
+\maketitle
+\section{POGLAVLJE}
+\subsection{Podnaslov}
+Tekst podnaslova... 
+\section{NOVO POGLAVLJE}
+\subsection{Podnaslov}
+Tekst podnaslova...
+\subsection{Novi podnaslov}
+Tekst podnaslova...
+\end{document}
+\end{verbatim}
+
+\column{.4\textwidth}
+\begin{figure}[h]
+	\centering
+		\shadowbox{\includegraphics[width=1.25\textwidth]{Naslov.jpg}}
+	\label{fig:Naslov}
+\hyperlink{slika}{\beamergotobutton{KAKO SMO DOBILI OVU SLIKU}}
+\end{figure}
+    \end{columns}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\hypertarget{vrati}{}
+\transwipe
+    \frametitle{Pisanje teksta i ureðivanje}
+Kod izrade razlièitih dokumenata postoje razni dodaci kojima možemo utjecati na izgled samog dokumenta. %na njegovu èitljivost i razumljivost
+Oni nam koriste za ureðivanje napisanog teksta.
+\pause
+\begin{itemize}
+\item<1-> kod pisanja teksta, font i njegova velièina odabrani su ovisno o logièkoj strukturi dokumenta, no želimo li dio dokumenta pisati u nekom drugom fontu, uèinit æemo to odgovarajuæim deklaracijama i naredbama kojima utjeèemo na promjenu fonta, njegovu velièinu i karakteristike
+\\
+\begin{center}
+\sffamily Ovaj \sffamily \large tekst \normalsize\rmfamily\textsl{je} \textbf{napisan} \mdseries{\underline{promijenom}} \normalsize\texttt{fonta} i \emph{njegovih} \textsc{atributa}.
+\end{center}  
+\pause
+\item<2-> ako je potrebno, pri pisanju teksta, možemo koristiti razlièite akcente i specijalne znakove (\textit{navodnike, crtice, trotoèke ...}) koje \LaTeX {} podržava
+\pause
+\item<3-> odgovarajuæim naredbama utjecati možemo i na:
+
+\begin{itemize} 
+\pause
+\item<1-> izgled napisanog odlomka
+\pause
+\item<2-> prijelom redaka i stranica
+\pause
+\item<3-> razmak izmeðu rijeèi i reèenica
+\pause
+\item<4-> rastavljanje rijeèi
+\pause
+\item<5-> oblik zaglavlja i podnožja dokumenta
+\pause
+\item<6-> izgled cijele stranice  
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\transwipe\frametitle{Okruženja}
+Za slaganje posebnih dijelova teksta u \LaTeX u{} postoje razlièita {\color{purple}okruženja}. Njih pozivamo naredbama koje oznaèavaju poèetak odnosno kraj okruženja: 
+{\color{blue}\begin{verbatim}
+\begin{ime_okruženja}
+  
+\end{ime_okruženja}
+\end{verbatim}}
+ 
+% neka od najèešæih okruženja dana su u sljedeæoj tablici
+\begin{center}
+\scriptsize\begin{tabular}{|c|c|c|}
+\hline OKRUŽENJE & IME OKRUŽENJA & OPIS \\ 
+\hline \hline  & itemize & stvaranje jednostavnih lista \\ 
+         LISTE & enumerate & stvaranje numeriranih lista \\    
+                     & description & stvaranje opisnih lista \\ 
+\hline             & flushleft & poravnanje teksta uz lijevi rub \\
+        PORAVNANJA & flushright & poravnanje teksta uz desni rub \\  
+                   & center & centriranje teksta \\
+\hline            & quote & citiranje izreka \\ 
+       CITIRANJA & quotation & citiranje veæih tekstova \\ 
+                 & verse & citiranje stihova \\ 
+\hline DOSLOVNO ZAPISIVANJE & verbatim & doslovno štampanje napisanog  \\ 
+\hline TABLICE & tabular & stvaranje raznih tablica \\ 
+\hline CRTEŽI & picture & izrada crteža i dijagrama  \\ 
+\hline KUTIJE & figure & izrada plutajuæih objekata i kutija  \\ 
+\hline 
+\end{tabular} 
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\transwipe\frametitle{Primjeri nekih okruženja}
+\begin{itemize}
+\item<1-> \textbf{LISTE}
+\begin{columns}[t]
+   \column{.3\textwidth}
+\scriptsize\begin{verbatim}
+\begin{enumerate}
+\item MATEMATIKA
+\item FIZIKA
+\item KEMIJA
+\end{enumerate}
+\end{verbatim}
+
+\begin{enumerate}
+\item MATEMATIKA
+\item FIZIKA
+\item KEMIJA
+\end{enumerate}
+\column{.3\textwidth}
+\scriptsize\begin{verbatim}
+\begin{itemize}
+\item[-] MATEMATIKA
+\item[-] FIZIKA
+\item[-] KEMIJA
+\end{itemize}
+\end{verbatim}
+\begin{itemize}
+\item[-] MATEMATIKA 
+\item[-] FIZIKA 
+\item[-] KEMIJA 
+\end{itemize}
+\column{.3\textwidth}
+\scriptsize\begin{verbatim}
+\begin{description}
+\item[MATEMATIKA] tekst 
+\item[FIZIKA] tekst
+\item[KEMIJA] tekst 
+\end{description}
+\end{verbatim}
+\begin{description}
+\item[MATEMATIKA] tekst 
+\item[FIZIKA] tekst
+\item[KEMIJA] tekst
+\end{description}
+
+\end{columns}
+\vspace{0.5 cm}
+\pause
+\item<2-> \textbf{POPIS LITERATURE}
+\begin{columns}[t]
+   \column{.3\textwidth}
+   \scriptsize\begin{verbatim}
+\begin{thebibliography}{argument}
+\bibitem{oznaka}
+Autor, Naslov, Izdavaè, 2007.
+\end{thebibliography}
+\end{verbatim}
+\column{.5\textwidth}
+\begin{thebibliography}{1}
+\bibitem{}
+Autor, Naslov, Izdavaè, 2007.
+\end{thebibliography}
+  
+\end{columns}
+\end{itemize} 
+\vspace{0.5 cm}
+\pause
+Naredbama {} {\color{green}\small\verb+\newcommand, \newenvironment+ } , \normalsize\LaTeX {} omoguæuje  stvaranje novih naredbi i novih okruženja.
+\end{frame}
+
+\begin{frame}[fragile]
+\transwipe
+\frametitle{Matematika u \LaTeX u}
+
+Za pisanje matematièkog teksta u \LaTeX u postoji {\color{purple}matematièki mod},\\
+{\color{magenta}\textit{math mode}}.
+\pause
+\begin{itemize}
+\vspace{0.2 cm}
+\item<1-> matematièki tekst se unosi izmeðu dva znaka {} {\color{blue}\$} {} ili izmeðu {} {\color{blue}\textbackslash( }   i {} {\color{blue}\textbackslash)} \\ili unutar naredbi 
+{\color{blue}\footnotesize\verb+ \begin{math}, \end{math} +} {}
+\normalsize 
+\vspace{0.2 cm}
+\pause
+\item<2-> ukoliko želimo neki matematièki izraz prikazati u posebnom retku, napisat æemo ga unutar znakova {}  {\color{blue}\textbackslash[ } i\hspace{0.04cm} {\color{blue}\textbackslash]}  
+\vspace{0.2 cm}
+\pause
+ 
+ \begin{columns}[t]
+   \column{.3\textwidth}
+% \scriptsize Primjer:
+\scriptsize\begin{verbatim}
+Ako je $f(x)=3x+7$ i $g(x)=x+4$ 
+onda je: 
+
+\[f(x)+g(x)=4x+11\]
+
+\[f(x)g(x)=3x^2+19x+28\]
+\end{verbatim}
+ \column{.4\textwidth}
+   
+ \scriptsize 
+\\
+Ako je $f(x)=3x+7$ i $g(x)=x+4$ \\onda je: 
+ \[f(x)+g(x)=4x+11\]   
+ \[f(x)g(x)=3x^2+19x+28\]
+
+ \end{columns}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+ \transwipe
+\frametitle{Matematièki simboli, znakovi ...}
+
+\begin{itemize}
+
+\item<1-> \LaTeX\hspace{0.1 cm} podržava velik broj raznovrsnih simbola i znakova koje koristimo za pisanje matematièkih formula 
+
+\vspace{0.1 cm}
+\scriptsize\infty\hspace{0.1 cm} \textbackslash infty\hspace{0.3 cm}
+\sum\hspace{0.1 cm} \textbackslash sum\hspace{0.3 cm}
+\prod\hspace{0.1 cm} \textbackslash prod\hspace{0.3 cm} 
+\int\hspace{0.1 cm} \textbackslash int\hspace{0.3 cm}
+\scriptsize\alpha\hspace{0.1 cm} \textbackslash alpha\hspace{0.3 cm}
+\beta\hspace{0.1 cm} \textbackslash beta\hspace{0.3 cm}
+\Gamma\hspace{0.1 cm} \textbackslash Gamma\hspace{0.3 cm} 
+\ldots
+\vspace{0.2 cm}
+\pause
+\item<2-> za korištenje matematièkih simbola, znakova i fontova potrebno je uèitati
+odgovarajuæe makro pakete {\color{purple}\small \textit{amssymb, amsfonts, amsmath} }
+
+\pause
+
+\item<3-> standardne funkcije unose se pomoæu znaka {} {\color{blue}\textbackslash} {} i oznake za funkciju
+
+\vspace{0.2 cm}
+\scriptsize\verb $\cos(\theta+\phi)=\cos\theta\cos\phi-\sin\theta\sin\phi$
+
+\vspace{0.2 cm}
+$\cos(\theta+\phi)=\cos\theta\cos\phi-\sin\theta\sin\phi$
+\pause
+
+\vspace{0.1 cm}
+\item<4-> indeksi i eksponenti unose se pomoæu znakova {} {\color{blue}\_ } {} i {} {\color{blue} \textasciicircum } {}, a možemo ih meðusobno miješati i ugnježðivati  
+
+\vspace{0.2 cm}
+\scriptsize\verb $ds^2=dx_1^2+dx_2^2+dx_3^2-c^2dt^2$
+\hspace{0.8 cm}$ ds^2 = dx_1^2 + dx_2^2 + dx_3^2 - c^2 dt^2 $
+ 
+
+\pause
+\vspace{0.2 cm}
+\item<5-> ukoliko želimo da neka naredba djeluje na više znakova onda ih grupiramo pomoæu vitièastih zagrada: {\color{blue}\{  \}}
+
+\vspace{0.2 cm}
+\scriptsize \$ \verb$a^x \cdot a^y  =  a^{x+y}$ \$
+\hspace{0.8 cm} $a^x \cdot a^y = a^{x+y}$
+
+\vspace{0.2 cm}
+\scriptsize\verb $x^{16}-1$
+\hspace{3.2 cm} $x^{16} - 1$ 
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\transwipe
+\frametitle{Matematièki izrazi i formule}
+Sve što je potrebno za pisanje matematièkog teksta opisano je u \LaTeX u {} odgovarajuæim naredbama. Kombiniranjem naredbi moguæe je dobiti i najsloženije matematièke izraze i formule.
+\\
+\vspace{0.2 cm}
+\pause
+\textit{Primjeri:}
+\begin{itemize}
+
+\item<1-> razlomke oblika {\color{violet}  $ \frac{brojnik}{nazivnik} $}
+unosimo naredbom 
+{\color{blue}\footnotesize\verb+\frac{brojnik}{nazivnik}+}, 
+\normalsize a kvadratni korijen odnosno n-ti korijen naredbama {\color{blue}\footnotesize\verb+ \sqrt, \sqrt[n] +}
+
+\vspace{0.3 cm}
+\scriptsize\verb $\frac{x-7}{x^2+4}$ 
+\hspace{1 cm}    \small $\frac{x-7}{x^2+4} $
+
+\vspace{0.2 cm}
+\scriptsize\verb $\frac{-b\pm\sqrt{b^2-4ac}}{2a}$
+\hspace{1 cm}
+\small $\frac{-b\pm\sqrt{b^2-4ac}}{2a}$
+
+\vspace{0.2 cm}
+\scriptsize\verb $\sqrt[3]{q+\sqrt{q^2-p^3}}+\sqrt[3]{q-\sqrt{q^2-p^3}}$
+\hspace{0.1 cm}
+\tiny $\sqrt[3]{q+\sqrt{q^2-p^3}}+\sqrt[3]{q-\sqrt{q^2-p^3}}$
+
+\pause
+\vspace{0.2 cm}
+\item<2-> osim razlomaka i korijena, u \LaTeX u se odgovarajuæim naredbama lako zapisuju razlièite formule koje sadrže sume, produkte, limese, integrale ...   
+
+%\vspace{0.1 cm}
+%\item<3-> za pisanje matrica, determinanti i sliènih tabela postoji posebno \textit{array} okruženje  
+\scriptsize \[ \sum_{k=1}^n k = \frac{1}{2} n (n+1) \qquad  \lim_{x \to +\infty} \frac{3x^2 +7x}{x^2 +5x} = 3 \qquad \frac{\partial u}{\partial t} \qquad \int_a^b f(x)\,dx  \qquad
+\left( \begin{array}{ccc}
+a & b & c \\
+d & e & f \\
+g & h & i \end{array} \right) \] 
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\transwipe
+\frametitle{Usporedba s tekst procesorima}
+
+\begin{itemize}
+
+\item<1-> usporedimo li matematièki tekst napisan u nekom tekst procesoru i \LaTeX u{}, uoèit æemo znatnu razliku
+
+\end{itemize}
+\pause
+\begin{figure}[h]
+	\centering
+		\shadowbox{\includegraphics[width=1.00\textwidth]{m5.jpg}}
+	\label{fig:m5}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\transwipe
+\frametitle{Okruženja u matematièkom modu}
+
+Okruženja koja se obièno koriste: 
+\begin{itemize}
+\item<1-> {\color{violet}\textit{equation}} - okolina za pisanje numeriranih matematièkih formula
+\footnotesize\[a^2+b^2=c^2\quad  (5.2)\] \normalsize
+\item <2-> {\color{violet}\textit{array}} - posebno okruženje za pisanje matrica, determinanti i sliènih tabela
+\footnotesize(za unos matrica postoje još okruženja {\color{purple}\textit{matrix, pmatrix, bmatrix, vmatrix, Vmatrix, Bmatrix, smallmatrix}}) 
+
+\footnotesize
+
+\[ \chi(\lambda) = \left| \begin{array}{ccc}
+\lambda - a & -b & -c \\
+-d & \lambda - e & -f \\
+-g & -h & \lambda - i \end{array} \right| \] 
+
+\item<3-> {\color{violet}\textit{eqnarray}, \textit{eqnarray*}} - okruženja za pisanje numeriranih odnosno nenumeriranih dugaèkih formula koje zauzimaju nekoliko redaka 
+\footnotesize\begin{eqnarray*}
+\cos 2\theta & = & \cos^2 \theta - \sin^2 \theta \\
+             & = & 2 \cos^2 \theta - 1
+\end{eqnarray*}
+   
+\footnotesize Još neka okruženja: 
+\begin{itemize}
+\item<1-> \footnotesize{\color{blue}\textsl{align}} - za niz formula, {\color{blue}\textsl{gather}} - za niz centriranih formula\\
+  {\color{blue}\textsl{aligned, gathered}} - za paralelno pisanje formula\\
+  {\color{blue}\textsl{multiline, split, cases}} - za dijeljenje formule u više redova (okruženja \textsl{split} i \textsl{cases} nisu samostalna veæ se definiraju unutar nekog drugog okruženja)
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\transwipe
+\frametitle{Pisanje teorema, propozicija, lema ...}
+
+Razni teoremi i njihove posljedice su nezaobilazni dio matematièkog teksta. Stvaranje takvih struktura \LaTeX {} omoguæuje zadavanjem naredbe  {\color{blue}\small\verb \newtheorem }
+
+\begin{columns}[t]
+   \column{.45\textwidth}
+\scriptsize\begin{verbatim}
+%definicije u preambuli dokumenta
+\newtheorem{teorem}{Teorem}
+\newtheorem{propozicija}[teorem]{Propozicija}
+\newtheorem{korolar}[teorem]{Korolar}
+\end{verbatim}
+\begin{figure}[h]
+	\centering
+	\shadowbox{\includegraphics[width=1.00\textwidth]{tm.jpg}}
+	\label{fig:tm}
+\end{figure}
+
+ \column{.35\textwidth}
+   \scriptsize\begin{verbatim}
+%pozivanje teorema u tekstu dokumenta
+\begin{teorem}
+Tekst teorema.
+\end{teorem}
+
+\begin{propozicija}
+Tekst propozicije.
+\end{propozicija}
+
+\begin{korolar}
+Tekst korolara.
+\end{korolar}
+\end{verbatim}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[plain,fragile]
+\transwipe
+\textbf{LITERATURA:}
+\vspace{0.3 cm}
+\footnotesize
+\begin{thebibliography}{9}
+\bibitem{} \verb+http://www.ctan.org/what_is_tex.html+
+\bibitem{} \verb+http://www.cs.cornell.edu/Info/Misc/LaTeX-Tutorial/LaTeX-Home.html
+\bibitem{} \verb+http://www.maths.tcd.ie/~dwilkins/LaTeXPrimer/+
+\bibitem{} \verb+http://www.tug.org/begin.html+
+\bibitem{} \verb+http://latex-beamer.sourceforge.net/+
+\bibitem{} \verb+http://www.ctan.org/tex-archive/macros/latex/contrib/beamer/+
+\bibitem{} \verb+http://faq.ktug.or.kr/wiki/uploads/beamer_guide.pdf+
+\bibitem{} \verb+http://web.math.hr/nastava/rp3/+
+\bibitem{} \verb+Š.Ungar: Ne baš tako kratak uvod u Tex+
+\end{thebibliography}
+\end{frame}
+
+\begin{frame}[fragile]
+\transwipe
+\frametitle{Dodatak}
+
+Na mjestu gdje u dokumentu želimo umetnuti sliku koristimo naredbu: {\color{blue}\verb+\includegraphics[opcije]{ime_slike}+} \\
+\vspace{0.4 cm}
+U zaglavlje smo stavili: {\color{violet}\verb+\usepackage[pdftex]{graphicx}+}\\
+\vspace{0.3 cm}
+Našu sliku smo uèitali i odredili joj velièinu unutar {\color{purple}\textit{figure}} okruženja naredbom {\color{violet}\verb+\includegraphics[width=1.25\textwidth]{Naslov.jpg}+} \\
+
+\vspace{0.3 cm}
+
+Dobiveni okvir oko slike smo postigli naredbom {\color{purple}\verb+\shadowbox+} koju koristimo unutar makro paketa {\color{purple}\textit{fancybox}}.\\
+%Dodatnim opcijama mogu se postiæi razne transformacije slike.
+
+\scriptsize\begin{verbatim}
+\begin{figure}[h]
+
+ \shadowbox{
+
+	 \includegraphics[width=1.25\textwidth]{Naslov.jpg} }
+                                                     
+\end{figure}
+\end{verbatim}
+\hypertarget{slika}{}
+\hyperlink{vrati}{\beamerreturnbutton{POVRATAK}}
+
+\end{frame}
+\end{document}

@@ -1,0 +1,73 @@
+% ------------------------------------------------------------------------------
+% LaTeX Template: Titlepage
+% This is a title page template which be used for both articles and reports.
+%
+% Copyright: http://www.howtotex.com/
+% Date: April 2011
+% ------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% Preamble
+% -------------------------------------------------------------------------------
+\documentclass[paper=a4, fontsize=11pt,twoside]{scrartcl}		% KOMA article
+
+\usepackage[a4paper,pdftex]{geometry}										% A4paper margins
+\setlength{\oddsidemargin}{5mm}												% Remove 'twosided' indentation
+\setlength{\evensidemargin}{5mm}
+
+\usepackage[english]{babel}
+\usepackage[protrusion=true,expansion=true]{microtype}	
+\usepackage{amsmath,amsfonts,amsthm,amssymb}
+\usepackage{graphicx}
+
+% ------------------------------------------------------------------------------
+% Definitions (do not change this)
+% ------------------------------------------------------------------------------
+\newcommand{\HRule}[1]{\rule{\linewidth}{#1}} 	% Horizontal rule
+
+\makeatletter							% Title
+\def\printtitle{%						
+    {\centering \@title\par}}
+\makeatother									
+
+\makeatletter							% Author
+\def\printauthor{%					
+    {\centering \large \@author}}				
+\makeatother							
+
+% ------------------------------------------------------------------------------
+% Metadata (Change this)
+% ------------------------------------------------------------------------------
+\title{	\normalsize \textsc{Title page subtitle} 	% Subtitle of the document
+		 	\\[2.0cm]													% 2cm spacing
+			\HRule{0.5pt} \\										% Upper rule
+			\LARGE \textbf{\uppercase{This is a rather long but nice looking title example}}	% Title
+			\HRule{2pt} \\ [0.5cm]								% Lower rule + 0.5cm spacing
+			\normalsize \today									% Todays date
+		}
+
+\author{
+		John F. Doe\\	
+		Imaginary University of Examples\\	
+		Made up department of Randomness\\
+        \texttt{your@email.com} \\
+}
+
+
+\begin{document}
+% ------------------------------------------------------------------------------
+% Maketitle
+% ------------------------------------------------------------------------------
+\thispagestyle{empty}				% Remove page numbering on this page
+
+\printtitle									% Print the title data as defined above
+  	\vfill
+\printauthor								% Print the author data as defined above
+% ------------------------------------------------------------------------------
+% Begin document
+% ------------------------------------------------------------------------------
+
+% ------------------------------------------------------------------------------
+% End document
+% ------------------------------------------------------------------------------
+\end{document}
