@@ -1,0 +1,33 @@
+# ✅ **NPM WebSDK Packages**
+.npm-package-regex: &npm-package-regex /^websdk\/[A-Z]+-\d+$/
+
+build-websdk:
+  stage: build-websdk
+  only:
+    - *npm-package-regex
+  before_script:
+    - npm ci --cache .npm
+  script:
+    - nx test pixelstreaming-websdk -- --passWithNoTests
+    # - node tools/scripts/npm-package-build/SetVersionIntoTheCode.js 'websdk_'
+    - cp -r libs/shared/pixelstreaming-websdk/src libs/pixelstreaming-websdk/src/shared
+    - NODE_ENV=production PUBLISH_BUILD=true nx build pixelstreaming-websdk --skip-nx-cache
+    - rm -r libs/pixelstreaming-websdk/src/shared
+    - node tools/scripts/npm-package-build/FixMainPropertyInPackageJson.js
+    - node tools/scripts/npm-package-build/SetVersionInPackageJson.js 'websdk/'
+  artifacts:
+    paths:
+      - dist/
+
+publish-websdk:
+  stage: deploy-websdk
+  only:
+    - *npm-package-regex
+  needs:
+    - build-websdk
+  script:
+    - echo "Publishing to npm"
+    - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+    - cd dist/libs/pixelstreaming-websdk
+    - npm publish --access public
+  when: manual

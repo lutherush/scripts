@@ -1,0 +1,230 @@
+## ===================== REGEX ANCHORS =====================
+.frontend-regex: &frontend-regex /^frontend\/[A-Za-z0-9._-]+$/
+
+## ===================== COMMON TEMPLATES =====================
+.npm-cache-template: &npm-cache-template
+  cache:
+    key: npm-cache-${CI_COMMIT_REF_NAME}
+    paths:
+      - node_modules
+      - .npm
+
+.common-tags: &common-tags
+  tags:
+    - bobthebuilder
+    - typescript
+
+.frontend-rules: &frontend-rules
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^frontend\/[A-Za-z0-9._-]+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-platform/'
+
+## ===================== VARIABLES =====================
+variables:
+  ENVIRONMENTS: "naglfar stormblast ragnarok"
+  FE_PROD: "true"
+  FE_ERL: "https://s3.console.aws.amazon.com/s3/buckets/arcware-cloud-repository?region=eu-central-1&prefix={{S3Key}}&showversions=false"
+  FE_USE_SUPPORT_WIDGET: "true"
+  # Use this variable to select the target environment.
+  TARGET_ENVIRONMENT: "naglfar"
+
+## ===================== VERSION MANAGEMENT STAGE =====================
+## ===================== VERSION MANAGEMENT STAGE =====================
+determine-version:
+  stage: prepare
+  <<: *common-tags
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^frontend\/[A-Za-z0-9._-]+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-platform/'
+  script:
+    - |
+      set -e  # Ensure failures stop execution immediately
+      
+      # Read platform version from file
+      PLATFORM_VERSION=$(cat .ci/versions/platform.txt)
+      echo "🔢 Platform Version: $PLATFORM_VERSION"
+      
+      # Read WebSDK version from file
+      WEBSDK_VERSION=$(cat .ci/versions/websdk.txt)
+      echo "🔢 WebSDK Version: $WEBSDK_VERSION"
+      
+      # Use the platform version as NX_VERSION
+      NX_VERSION=$PLATFORM_VERSION
+      echo "NX_VERSION=${NX_VERSION}" >> version.env
+      echo "✅ Final NX_VERSION: $NX_VERSION"
+      
+      # Write NX_VERSION to version.txt
+      echo "$NX_VERSION" > version.txt
+  artifacts:
+    paths:
+      - version.txt
+      - version.env
+    reports:
+      dotenv: version.env
+  when: always
+
+
+## ===================== BUILD STAGE =====================
+.build-template: &build-template
+  stage: build
+  <<: *common-tags
+  <<: *npm-cache-template
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^frontend\/[A-Za-z0-9._-]+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-platform/'
+    # Only run this matrix job if FE_ENVIRONMENT_NAME equals TARGET_ENVIRONMENT.
+    - if: '$FE_ENVIRONMENT_NAME == "$TARGET_ENVIRONMENT"'
+  needs:
+    - determine-version
+  before_script:
+    - npm ci --cache .npm
+    - source version.env
+
+arcware-platform-build:
+  <<: *build-template
+  parallel:
+    matrix:
+      - FE_ENVIRONMENT_NAME: [naglfar, stormblast, ragnarok]
+  script:
+    - |
+      set -e  # Ensure failures stop execution immediately
+      echo "🚀 Building for environment: $FE_ENVIRONMENT_NAME"
+      
+      # ✅ Ensure environment file is copied correctly
+      cp $FE_ENV_STAGE ./.env || { echo "❌ ERROR: Missing .env file!"; exit 1; }
+      
+      # ✅ Ensure dependencies are copied (prone to refactoring)
+      npm run prewebsdk_build_local
+
+      # ✅ Build Backoffice Component
+      echo "🔨 Building Backoffice Component..."
+      FE_BACKOFFICE=true \
+      FE_EXTERNAL_REPOSITORY_LINK=${FE_ERL} \
+      NX_VERSION=${NX_VERSION} \
+      nx run arcware-platform:build-vars --c=prod
+      
+      mkdir -p ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-backoffice
+      mv ./dist/apps/frontend/arcware-platform/* ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-backoffice
+      
+      # ✅ Build Platform Component
+      echo "🔨 Building Platform Component..."
+      FE_BACKOFFICE=false \
+      NX_VERSION=${NX_VERSION} \
+      nx run arcware-platform:build-vars --c=prod
+      
+      mkdir -p ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform
+      mv ./dist/apps/frontend/arcware-platform/* ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform
+      
+      # ✅ Build Share Component
+      echo "🔨 Building Share Component..."
+      NX_VERSION=${NX_VERSION} nx run arcware-platform-share:build-vars --c=prod
+      
+      mkdir -p ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform-share
+      mv ./dist/apps/frontend/arcware-platform-share/* ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform-share
+  artifacts:
+    paths:
+      - dist
+      - version.txt
+      - version.env
+
+## ===================== DEPLOYMENT STAGE =====================
+.deploy-template: &deploy-template
+  stage: deploy
+  <<: *common-tags
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^frontend\/[A-Za-z0-9._-]+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-platform/'
+    # Only run this deploy matrix job if FE_ENVIRONMENT_NAME equals TARGET_ENVIRONMENT.
+    - if: '$FE_ENVIRONMENT_NAME == "$TARGET_ENVIRONMENT"'
+  # This "needs" will pair the deploy job with its matching build job.
+  needs:
+    - job: arcware-platform-build
+      artifacts: true
+      optional: true
+  before_script:
+    # Login to all environments
+    - mc alias set naglfar $MINIO_NAGLFAR_URL $NAGLFAR_USERNAME $NAGLFAR_PASSWORD
+    - mc alias set stormblast $MINIO_STORMBLAST_URL $STORMBLAST_USERNAME $STORMBLAST_PASSWORD
+    - mc alias set ragnarok $MINIO_RAGNAROK_URL $RAGNAROK_USERNAME $RAGNAROK_PASSWORD
+  when: manual
+
+deploy-platform:
+  <<: *deploy-template
+  parallel:
+    matrix:
+      - FE_ENVIRONMENT_NAME: [naglfar, stormblast, ragnarok]
+  script:
+    - |
+      set -e  # Ensure failures stop execution immediately
+      echo "🚀 Deploying to environment: $FE_ENVIRONMENT_NAME"
+      
+      # Function to deploy a component
+      deploy_component() {
+        local component_name=$1
+        local bucket_name=$2
+        
+        echo "📦 Deploying $component_name to $bucket_name bucket..."
+        mc mb ${FE_ENVIRONMENT_NAME}/$bucket_name --p
+        mc policy set public ${FE_ENVIRONMENT_NAME}/$bucket_name
+        mc rm ${FE_ENVIRONMENT_NAME}/$bucket_name --recursive --force
+        mc cp dist/apps/frontend/${FE_ENVIRONMENT_NAME}/$component_name/ ${FE_ENVIRONMENT_NAME}/$bucket_name --recursive
+        echo "✅ $component_name deployed successfully to $bucket_name"
+      }
+      
+      # Deploy all components
+      deploy_component "arcware-platform" "platform"
+      deploy_component "arcware-backoffice" "backoffice"
+      deploy_component "arcware-platform-share" "share"
+      
+  after_script:
+    - | 
+      # Notify success
+      echo "🎉 Deployment to $FE_ENVIRONMENT_NAME completed successfully!"
+      
+      # Add notification hooks here if needed
+      # curl -X POST -H "Content-Type: application/json" -d "{\"text\":\"✅ Deployed $NX_VERSION to $FE_ENVIRONMENT_NAME\"}" $SLACK_WEBHOOK_URL
+
+## ===================== VERIFICATION STAGE =====================
+verify-deployment:
+  stage: verify
+  <<: *common-tags
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^frontend\/[A-Za-z0-9._-]+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-platform/'
+  # Only verify the target environment.
+  needs:
+    - deploy-platform
+  script:
+    - |
+      set -e
+      source version.env
+      echo "🔍 Verifying deployment of $NX_VERSION for $TARGET_ENVIRONMENT"
+      
+      verify_deployment() {
+        local bucket=$1
+        echo "🔍 Checking $bucket deployment in $TARGET_ENVIRONMENT environment"
+        if mc ls $TARGET_ENVIRONMENT/$bucket/index.html &>/dev/null; then
+          echo "✅ $bucket in $TARGET_ENVIRONMENT verified successfully"
+        else
+          echo "❌ Verification failed for $bucket in $TARGET_ENVIRONMENT"
+          exit 1
+        fi
+      }
+      
+      for BUCKET in platform backoffice share; do
+        verify_deployment "$BUCKET"
+      done
+      
+      echo "✅ Deployment verified successfully for $TARGET_ENVIRONMENT!"
+  when: on_success
+
+## ===================== CLEANUP STAGE =====================
+cleanup:
+  stage: cleanup
+  <<: *common-tags
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^frontend\/[A-Za-z0-9._-]+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-platform/'
+  needs:
+    - verify-deployment
+  script:
+    - |
+      echo "🧹 Cleaning up temporary files..."
+      rm -rf dist
+      find . -name ".npm" -type d -exec rm -rf {} +
+      echo "✅ Cleanup completed successfully"
+  when: manual

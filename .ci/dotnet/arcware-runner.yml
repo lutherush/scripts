@@ -1,0 +1,80 @@
+# ✅ **Arcware Runner Builds**
+.arcware-runner-regex: &arcware-runner-regex /^arcware-runner\/[A-Z]+-\d+$/
+
+# Reusable rule combining branch regex and commit message trigger
+.arcware-runner-rule: &arcware-runner-rule
+ rules:
+  - if: '$CI_COMMIT_BRANCH =~ /^arcware-runner\/[A-Z]+-\d+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-runner/'
+
+# ========================= ARCWARE RUNNER BUILD =========================
+arcware-runner-build:
+  stage: build
+  <<: *arcware-runner-rule
+  tags:
+    - bobthebuilder
+    - typescript
+  script:
+    - cd apps/arcware-runner
+    - dotnet publish -o ./app -f net7.0 -r win-x64 -c Release --self-contained true
+  artifacts:
+    paths:
+      - apps/arcware-runner/app/
+
+# ========================= ARCWARE RUNNER ZIP & UPLOAD =========================
+arcware-runner-deploy-http:
+  stage: deploy
+  <<: *arcware-runner-rule
+  tags:
+    - bobthebuilder
+    - typescript
+  needs:
+    - arcware-runner-build
+  script:
+    # Extract version number from JSON
+    - |
+      VERSION="$(sed -z 's/\n/\./g;s/\.$/\n/' <<< "$(cat apps/arcware-runner/app/Version.json | grep -oPiw '((?:(?<="Major": )|(?<="Major":))[0-9]+)|((?:(?<="Minor": )|(?<="Minor":))[0-9]+)|((?:(?<="Patch": )|(?<="Patch":))[0-9]+)')")"
+    - FILE="arcware-runner-${VERSION}.zip"
+
+    # Ensure file does not already exist
+    - |
+      if [ -f "$FILE" ]; then
+        echo "File '$FILE' already exists."
+        exit 1
+      fi
+
+    # Create zip archive
+    - cd apps/arcware-runner/app
+    - zip -r -9 $FILE ./
+    - cd ../../..
+
+    # Upload to HTTP server
+    - curl -X PUT -Ffile=@apps/arcware-runner/app/$FILE "http://10.192.20.30:25478/files/$FILE?token=$RUNNER_UPDATE_TOKEN"
+
+    # Check if upload was successful
+    - |
+      if [ $(curl -s -o /dev/null -w "%{http_code}" "http://10.192.20.30:25478/files/$FILE?token=$RUNNER_UPDATE_TOKEN") -eq 200 ]; then
+        echo "File '$FILE' uploaded successfully."
+      else
+        echo "File '$FILE' failed to upload."
+        exit 1
+      fi
+
+    # Delete local zip file after successful upload
+    - rm -rf apps/arcware-runner/app/$FILE
+  artifacts:
+    paths:
+      - apps/arcware-runner/app/
+
+# ========================= ARCWARE RUNNER POST-DEPLOYMENT =========================
+arcware-runner-post-deploy-microservice:
+  stage: post
+  <<: *arcware-runner-rule
+  tags:
+    - typescript
+  needs:
+    - arcware-runner-deploy-http
+  script:
+    - mkdir -p ./announce
+    - cp "$AnnounceNewRunnerVersion" ./announce/script.sh
+    - chmod +x ./announce/script.sh
+    - ./announce/script.sh

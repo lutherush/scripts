@@ -1,0 +1,78 @@
+variables:
+  DOTNET_BASE_IMAGE: $CI_REGISTRY/development/arcware-cloud/dotnet-base-image:1.0
+  DOCKER_TLS_CERTDIR: "/certs"
+  SIGNALLING_IMAGE: $CI_REGISTRY/development/arcware-cloud/signalling:$CI_COMMIT_BRANCH
+  SIGNALLING_API_IMAGE: $CI_REGISTRY/development/arcware-cloud/signalling-api:$CI_COMMIT_BRANCH
+  CLOUD3DX_IMAGE: $CI_REGISTRY/development/arcware-cloud/3dxcloud:$CI_COMMIT_BRANCH
+  MESSAGE_BROKER_IMAGE: $CI_REGISTRY/development/arcware-cloud/message-broker:$CI_COMMIT_BRANCH
+  CLOUD_CONSOLE_IMAGE: $CI_REGISTRY/development/arcware-cloud/cloud-console:$CI_COMMIT_BRANCH
+  NX_KEYCLOAK_URL: $KEYCLOAK_URL
+  STAGE_SIGNALLING_PRIVATE_ADDRESS: 10.193.20.20
+  SIGNALLING_PRIVATE_ADDRESS: notrequired_for_aws
+  MDB: mongodb://mongodb:27017
+  UNREAL_UPLOAD_API_IMAGE: $CI_REGISTRY/development/arcware-cloud/unreal-upload-api:$CI_COMMIT_BRANCH
+  UNREAL_UPLOAD_MANAGER_IMAGE: $CI_REGISTRY/development/arcware-cloud/unreal-upload-manager:$CI_COMMIT_BRANCH
+  GIT_SSL_NO_VERIFY: "1"
+
+
+stages:
+  - lint
+  - prepare
+  - build
+  - build-image
+  - build-platform
+  - build-backend
+  - build-websdk
+  - image
+  - test
+  - sast
+  - build-area51
+  - deploy-area51
+  - build-dev
+  - deploy
+  - build-staging
+  - deploy-staging
+  - build-production
+  - scan
+  - deploy-platform
+  - deploy-backend
+  - deploy-production
+  - deploy_area51
+  - deploy_naglfar
+  - deploy_stormblast
+  - deploy_ragnarok
+  - deploy-websdk
+  - verify
+  - tagging
+  - post
+  - release
+  - cleanup
+#  - deploy
+
+
+include:
+  # -----------------------------------
+  # 🚀 **Backend Pipelines**
+  # -----------------------------------
+  - ".ci/backend/backend.yml"
+
+  # -----------------------------------
+  # 🎨 **Frontend Pipelines**
+  # -----------------------------------
+  - ".ci/frontend/clients.yml"
+  - ".ci/frontend/demos.yml"
+  - ".ci/frontend/platform.yml"
+  - ".ci/frontend/websdk.yml"
+
+  # -----------------------------------
+  # ⚙️ **Dotnet Pipelines**
+  # -----------------------------------
+  - ".ci/dotnet/arcware-runner.yml"
+  - ".ci/dotnet/gauging.yml"
+  - ".ci/dotnet/grpc.yml"
+
+  # -----------------------------------
+  # 🐍 **Python Pipelines**
+  # -----------------------------------
+  - ".ci/python/python.yml"
+  - ".ci/python/repo-service.yml"
