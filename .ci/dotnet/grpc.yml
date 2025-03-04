@@ -1,0 +1,79 @@
+# ✅ **Message Broker / gRPC Services**
+.grpc-regex: &grpc-regex /^grpc\/[A-Z]+-\d+(?:-[a-z0-9]+)?$/
+
+# Reusable rule combining branch regex and commit message trigger for gRPC
+.grpc-rule: &grpc-rule
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^grpc\/[A-Z]+-\d+(?:-[a-z0-9]+)?$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-grpc/'
+
+message-broker-build:
+  stage: build
+  <<: *grpc-rule
+  tags:
+    - bobthebuilder
+    - typescript
+  script:
+    - cd apps/message-broker
+    - dotnet publish -o ./app -f net7.0 -r linux-x64 -c Release
+  artifacts:
+    paths:
+      - apps/message-broker/app/
+
+# ========================= MESSAGE BROKER IMAGE BUILD =========================
+
+message-broker-image:
+  stage: image
+  <<: *grpc-rule
+  tags:
+    - bobthebuilder
+    - typescript
+  needs:
+    - message-broker-build
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - |
+      # Read version from .ci/versions/grpc.txt
+      VERSION=$(cat .ci/versions/grpc.txt)
+      echo "Building Message Broker image with version: ${VERSION}"
+    - docker build -f ./apps/message-broker/production.Dockerfile -t gitlab.arcware.cloud:5050/development/arcware-cloud/message-broker:${VERSION} .
+    - docker push gitlab.arcware.cloud:5050/development/arcware-cloud/message-broker:${VERSION}
+
+# ========================= MESSAGE BROKER DEPLOYMENT TEMPLATE =========================
+
+.deploy-message-broker-template: &deploy-message-broker-template
+  stage: deploy
+  tags:
+    - bobthebuilder
+    - typescript
+  needs:
+    - message-broker-image
+  script:
+    - |
+      # Read version from .ci/versions/grpc.txt
+      VERSION=$(cat .ci/versions/grpc.txt)
+      echo "Deploying Message Broker with version: ${VERSION}"
+    - kubectl config use-context development/arcware-cloud:$ENV
+    - kubectl version
+    - kubectl get all
+    - kubectl config set-context --current --namespace=message-broker
+    - |
+      # Replace <VERSION> placeholder with the actual version in deployment manifest
+      sed -i "s|<VERSION>|${VERSION}|g" ./k8s/message-broker/base/deployment.yml
+      echo "Updated deployment manifest:"
+      cat ./k8s/message-broker/base/deployment.yml
+    - kubectl apply -f ./k8s/message-broker/base/deployment.yml
+  environment:
+    name: dev
+    kubernetes:
+      namespace: micro-cloud
+  <<: *grpc-rule
+  when: manual
+
+# ========================= PARALLEL DEPLOYMENT MATRIX =========================
+
+deploy-message-broker:
+  extends: .deploy-message-broker-template
+  parallel:
+    matrix:
+      - ENV: [area51, naglfar, stormblast, ragnarok]

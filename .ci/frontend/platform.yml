@@ -1,0 +1,178 @@
+## ===================== REGEX ANCHORS =====================
+# (No explicit anchor needed here now)
+
+## ===================== COMMON TEMPLATES =====================
+.npm-cache-template: &npm-cache-template
+  cache:
+    key: npm-cache-${CI_COMMIT_REF_NAME}
+    paths:
+      - node_modules
+      - .npm
+
+.common-tags: &common-tags
+  tags:
+    - bobthebuilder
+    - typescript
+
+.frontend-rules: &frontend-rules
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^frontend\/[A-Za-z0-9._-]+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-platform/'
+
+## ===================== VARIABLES =====================
+variables:
+  ENVIRONMENTS: "naglfar stormblast ragnarok"
+  FE_PROD: "true"
+  FE_ERL: "https://s3.console.aws.amazon.com/s3/buckets/arcware-cloud-repository?region=eu-central-1&prefix={{S3Key}}&showversions=false"
+  FE_USE_SUPPORT_WIDGET: "true"
+  # Use this variable to select the target environment.
+  TARGET_ENVIRONMENT: "naglfar"
+
+## ===================== VERSION MANAGEMENT STAGE =====================
+determine-version:
+  stage: prepare
+  <<: *common-tags
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^frontend\/[A-Za-z0-9._-]+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-platform/'
+  script:
+    - |
+      set -e  # Ensure failures stop execution immediately
+      
+      # Read platform version from file
+      PLATFORM_VERSION=$(cat .ci/versions/platform.txt)
+      echo "🔢 Platform Version: $PLATFORM_VERSION"
+      
+      # Read WebSDK version from file
+      WEBSDK_VERSION=$(cat .ci/versions/websdk.txt)
+      echo "🔢 WebSDK Version: $WEBSDK_VERSION"
+      
+      # Use the platform version as NX_VERSION
+      NX_VERSION=$PLATFORM_VERSION
+      echo "NX_VERSION=${NX_VERSION}" >> version.env
+      echo "WEBSDK_VERSION=${WEBSDK_VERSION}" >> version.env
+      echo "✅ Final NX_VERSION: $NX_VERSION"
+      
+      # Write NX_VERSION to version.txt for backward compatibility
+      echo "$NX_VERSION" > version.txt
+  artifacts:
+    paths:
+      - version.txt
+      - version.env
+    reports:
+      dotenv: version.env
+  when: always
+
+## ===================== BUILD STAGE =====================
+arcware-platform:
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^frontend\/[A-Za-z0-9._-]+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-platform/'
+  variables:
+    NX_VERSION: ${CI_COMMIT_REF_NAME}  # adjust if needed
+    FE_PROD: "true"
+  tags:
+    - bobthebuilder
+    - typescript
+  before_script:
+    - npm ci --cache .npm
+  script:
+    # Build for Naglfar:
+    - export FE_ENVIRONMENT_NAME=naglfar
+    - cp $FE_ENV_STAGE ./.env
+    - npm run prewebsdk_build_local    
+    - FE_BACKOFFICE=true nx run arcware-platform:build-vars --c=prod
+    - mkdir -p ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-backoffice
+    - mv ./dist/apps/frontend/arcware-platform/* ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-backoffice
+    - FE_BACKOFFICE=false nx run arcware-platform:build-vars --c=prod
+    - mkdir -p ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform
+    - mv ./dist/apps/frontend/arcware-platform/* ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform
+    - nx run arcware-platform-share:build-vars --c=prod
+    - mkdir -p ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform-share
+    # Use cp instead of mv so that the share build output is copied from a common folder
+    - cp -r ./dist/apps/frontend/arcware-platform-share/* ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform-share/
+
+    # Build for Stormblast:
+    - export FE_ENVIRONMENT_NAME=stormblast
+    - cp $FE_ENV_STAGE ./.env
+    - npm run prewebsdk_build_local    
+    - FE_BACKOFFICE=true nx run arcware-platform:build-vars --c=prod
+    - mkdir -p ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-backoffice
+    - mv ./dist/apps/frontend/arcware-platform/* ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-backoffice
+    - FE_BACKOFFICE=false nx run arcware-platform:build-vars --c=prod
+    - mkdir -p ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform
+    - mv ./dist/apps/frontend/arcware-platform/* ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform
+    - nx run arcware-platform-share:build-vars --c=prod
+    - mkdir -p ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform-share
+    - cp -r ./dist/apps/frontend/arcware-platform-share/* ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform-share/
+
+    # Build for Ragnarok:
+    - export FE_ENVIRONMENT_NAME=ragnarok
+    - cp $FE_ENV_PROD ./.env
+    - npm run prewebsdk_build_local    
+    - FE_BACKOFFICE=true nx run arcware-platform:build-vars --c=prod
+    - mkdir -p ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-backoffice
+    - mv ./dist/apps/frontend/arcware-platform/* ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-backoffice
+    - FE_BACKOFFICE=false nx run arcware-platform:build-vars --c=prod
+    - mkdir -p ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform
+    - mv ./dist/apps/frontend/arcware-platform/* ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform
+    - nx run arcware-platform-share:build-vars --c=prod
+    - mkdir -p ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform-share
+    - cp -r ./dist/apps/frontend/arcware-platform-share/* ./dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform-share/
+  cache:
+    paths:
+      - .npm
+  artifacts:
+    paths:
+      - dist
+
+## ===================== DEPLOYMENT JOB TEMPLATE =====================
+.arcware-platform-deploy-template: &arcware-platform-deploy-template
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^frontend\/[A-Za-z0-9._-]+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-platform/'
+      when: manual
+  tags:
+    - bobthebuilder
+    - typescript
+  needs:
+    - arcware-platform
+  before_script:
+    # Set aliases for each environment with their own credentials
+    - echo "Setting alias for naglfar"
+    - mc alias set naglfar $MINIO_NAGLFAR_URL $NAGLFAR_USERNAME $NAGLFAR_PASSWORD
+    - echo "Setting alias for stormblast"
+    - mc alias set stormblast $MINIO_STORMBLAST_URL $STORMBLAST_USERNAME $STORMBLAST_PASSWORD
+    - echo "Setting alias for ragnarok"
+    - mc alias set ragnarok $MINIO_RAGNAROK_URL $RAGNAROK_USERNAME $RAGNAROK_PASSWORD
+  script:
+    # Deploy Platform Component
+    - mc mb ${FE_ENVIRONMENT_NAME}/platform --p
+    - mc policy set public ${FE_ENVIRONMENT_NAME}/platform
+    - mc rm ${FE_ENVIRONMENT_NAME}/platform --recursive --force
+    - mc cp dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform/ ${FE_ENVIRONMENT_NAME}/platform --recursive
+    # Deploy Backoffice Component
+    - mc mb ${FE_ENVIRONMENT_NAME}/backoffice --p
+    - mc policy set public ${FE_ENVIRONMENT_NAME}/backoffice
+    - mc rm ${FE_ENVIRONMENT_NAME}/backoffice --recursive --force
+    - mc cp dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-backoffice/ ${FE_ENVIRONMENT_NAME}/backoffice --recursive
+    # Deploy Share Component
+    - mc mb ${FE_ENVIRONMENT_NAME}/share --p
+    - mc policy set public ${FE_ENVIRONMENT_NAME}/share
+    - mc rm ${FE_ENVIRONMENT_NAME}/share --recursive --force
+    - mc cp dist/apps/frontend/${FE_ENVIRONMENT_NAME}/arcware-platform-share/ ${FE_ENVIRONMENT_NAME}/share --recursive
+  when: manual
+
+## ===================== DEPLOYMENT JOBS =====================
+deploy-platform-naglfar:
+  <<: *arcware-platform-deploy-template
+  variables:
+    FE_ENVIRONMENT_NAME: "naglfar"
+
+deploy-platform-stormblast:
+  <<: *arcware-platform-deploy-template
+  variables:
+    FE_ENVIRONMENT_NAME: "stormblast"
+
+deploy-platform-ragnarok:
+  <<: *arcware-platform-deploy-template
+  variables:
+    FE_ENVIRONMENT_NAME: "ragnarok"

@@ -1,0 +1,225 @@
+# ✅ **CRM Data Sync Services**
+.crm-data-sync-regex: &crm-data-sync-regex /^crm-data-sync\/[A-Z]+-\d+$/
+.crm-data-sync-rule: &crm-data-sync-rule
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^crm-data-sync\/[A-Z]+-\d+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-crm/'
+
+crm-data-sync-image:
+  image: docker:latest
+  stage: image
+  <<: *crm-data-sync-rule
+  tags:
+    - bobthebuilder
+    - crm-data-sync
+  before_script:
+    - sudo docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - cd ./apps/python/crm-data-sync/src/
+    - |
+      # Read version from .ci/versions/crm.txt
+      VERSION=$(cat .ci/versions/crm.txt)
+      echo "Building CRM Data Sync container with version: ${VERSION}"
+    - sudo docker build -f ./Dockerfile --build-arg PIPEDRIVE_API_TOKEN="$PIPEDRIVE_API_TOKEN" -t gitlab.arcware.cloud:5050/development/arcware-cloud/crm-data-sync:${VERSION} .
+    - sudo docker push gitlab.arcware.cloud:5050/development/arcware-cloud/crm-data-sync:${VERSION}
+
+crm-data-sync-deploy:
+  stage: deploy
+  <<: *crm-data-sync-rule
+  tags:
+    - crm-data-sync
+  needs:
+    - crm-data-sync-image
+  script:
+    - kubectl config use-context development/arcware-cloud:ragnarok
+    - kubectl config set-context --current --namespace=data
+    # (Assuming your deployment manifest is already version-aware or uses a variable)
+    - |
+      VERSION=$(cat .ci/versions/crm.txt)
+      echo "Deploying CRM Data Sync version: ${VERSION}"
+    - sed -i "s|<VERSION>|${VERSION}|g" ./k8s/crm/crm-data-sync.yaml
+    - kubectl apply -f ./k8s/crm/crm-data-sync.yaml
+  when: manual
+
+####################################
+# AVScanner Jobs
+####################################
+.avscanner-regex: &avscanner-regex /^avscanner\/[A-Z]+-\d+$/
+.avscanner-rule: &avscanner-rule
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^avscanner\/[A-Z]+-\d+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-avscanner/'
+
+avscanner-image:
+  image: docker:latest
+  stage: image
+  <<: *avscanner-rule
+  tags:
+    - avscanner-001
+  before_script:
+    - sudo docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - cd ./apps/python/avscanner/src/
+    - |
+      # Read version from .ci/versions/av.txt
+      VERSION=$(cat .ci/versions/av.txt)
+      echo "Building AVScanner container with version: ${VERSION}"
+    - sudo docker build -f ./Dockerfile -t gitlab.arcware.cloud:5050/development/arcware-cloud/avscanner:${VERSION} .
+    - sudo docker push gitlab.arcware.cloud:5050/development/arcware-cloud/avscanner:${VERSION}
+
+.deploy-avscanner-template: &deploy-avscanner-template
+  stage: deploy
+  <<: *avscanner-rule
+  tags:
+    - avscanner
+  needs:
+    - avscanner-image
+  variables:
+    GENERAL_ARGS: --restart=always
+  before_script:
+    - sudo docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - |
+      # Read version from .ci/versions/av.txt
+      VERSION=$(cat .ci/versions/av.txt)
+      echo "Deploying AVScanner version: ${VERSION}"
+    - sudo docker pull gitlab.arcware.cloud:5050/development/arcware-cloud/avscanner:${VERSION}
+    - sudo docker stop "$NAME" || echo "No running container to stop"
+    - sudo docker rm "$NAME" || echo "No container to remove"
+    - >
+      sudo docker run \
+        --name "$NAME" \
+        --log-opt max-size=10m --log-opt max-file=3 \
+        $GENERAL_ARGS \
+        -e INSTANCE_ID="$NAME" \
+        -e ACCESS_KEY="$UNREAL_UPLOAD_PIPELINE_AWS_KEY" \
+        -e SECRET_KEY="$UNREAL_UPLOAD_PIPELINE_AWS_SECRET" \
+        -e UPLOAD_BUCKET="$UNREAL_UPLOAD_API_UPLOAD_BUCKET" \
+        -e CLEAN_BUCKET="$UNREAL_UPLOAD_API_CLEAN_BUCKET" \
+        -e INFECTED_BUCKET="$UNREAL_UPLOAD_API_INFECTED_BUCKET" \
+        -e SCAN_WHITELIST="$AVSCANNER_WHITELIST" \
+        -d \
+        gitlab.arcware.cloud:5050/development/arcware-cloud/avscanner:${VERSION}
+    - sudo docker system prune -af --volumes
+  when: manual
+
+.deploy-avscanner:
+  extends: .deploy-avscanner-template
+  parallel:
+    matrix:
+      - NAME: [avscanner-001, avscanner-002, avscanner-003]
+
+####################################
+# Unreal Upload API Jobs
+####################################
+.unreal-upload-api-regex: &unreal-upload-api-regex /^unreal-upload-api\/[A-Z]+-\d+$/
+.unreal-upload-api-rule: &unreal-upload-api-rule
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^unreal-upload-api\/[A-Z]+-\d+$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-upload/'
+
+unreal-upload-api-image:
+  image: docker:latest
+  stage: image
+  <<: *unreal-upload-api-rule
+  tags:
+    - bobthebuilder
+    - typescript
+  before_script:
+    - sudo docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - cd ./apps/unreal-upload-api/
+    - |
+      # Read version from .ci/versions/upload.txt
+      VERSION=$(cat .ci/versions/upload.txt)
+      echo "Building Unreal Upload API container with version: ${VERSION}"
+    - sudo docker build -f ./Dockerfile -t gitlab.arcware.cloud:5050/development/arcware-cloud/unreal-upload-api:${VERSION} .
+    - sudo docker push gitlab.arcware.cloud:5050/development/arcware-cloud/unreal-upload-api:${VERSION}
+
+.deploy-unreal-upload-api-template: &deploy-unreal-upload-api-template
+  stage: deploy
+  <<: *unreal-upload-api-rule
+  tags:
+    - bobthebuilder
+    - typescript
+  needs:
+    - unreal-upload-api-image
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - |
+      # Read version from .ci/versions/upload.txt
+      VERSION=$(cat .ci/versions/upload.txt)
+      echo "Deploying Unreal Upload API version: ${VERSION}"
+    - docker pull gitlab.arcware.cloud:5050/development/arcware-cloud/unreal-upload-api:${VERSION}
+    - docker stop $NAME || echo "No container to stop"
+    - docker rm $NAME || echo "No container to remove"
+    - >
+      docker run \
+        --name $NAME \
+        --log-opt max-size=10m --log-opt max-file=3 \
+        --restart=always \
+        -e MANAGER_URL=$MANAGER_URL \
+        -e KEYCLOAK_URL=$KEYCLOAK_URL \
+        -e KEYCLOAK_CLIENT_ID=$KEYCLOAK_CLIENT_ID_UUA \
+        -e KEYCLOAK_CLIENT_SECRET=$KEYCLOAK_CLIENT_SECRET \
+        -e PORT=5000 \
+        -e ACCESS_KEY=$UNREAL_UPLOAD_PIPELINE_AWS_KEY \
+        -e SECRET_KEY=$UNREAL_UPLOAD_PIPELINE_AWS_SECRET \
+        -e UPLOAD_BUCKET=$UNREAL_UPLOAD_API_UPLOAD_BUCKET \
+        -e CLEAN_BUCKET=$UNREAL_UPLOAD_API_CLEAN_BUCKET \
+        -e INFECTED_BUCKET=$UNREAL_UPLOAD_API_INFECTED_BUCKET \
+        -p 80:5000 \
+        -d \
+        gitlab.arcware.cloud:5050/development/arcware-cloud/unreal-upload-api:${VERSION}
+    - docker system prune -af --volumes
+  when: manual
+
+# ==================== SPLIT DEPLOYMENTS BY ENVIRONMENT ====================
+# This avoids exceeding 200 job combinations by breaking them down.
+
+deploy-unreal-upload-api-area51:
+  extends: .deploy-unreal-upload-api-template
+  variables:
+    NAME: "unreal-upload-api-area51"
+    MANAGER_URL: "unreal-upload-manager.area51.arcware.cloud"
+    KEYCLOAK_URL: "https://auth.area51.arcware.cloud"
+    KEYCLOAK_CLIENT_SECRET: $KEYCLOAK_CLIENT_SECRET_UUA_AREA51
+  tags:
+    - uua-area51.arcware.cloud
+
+deploy-unreal-upload-api-naglfar:
+  extends: .deploy-unreal-upload-api-template
+  variables:
+    NAME: "unreal-upload-api-naglfar"
+    MANAGER_URL: "unreal-upload-manager.naglfar.arcware.cloud"
+    KEYCLOAK_URL: "https://auth.naglfar.arcware.cloud"
+    KEYCLOAK_CLIENT_SECRET: $KEYCLOAK_CLIENT_SECRET_UUA_NAGLFAR
+  tags:
+    - uua-naglfar.arcware.cloud
+
+deploy-unreal-upload-api-stormblast:
+  extends: .deploy-unreal-upload-api-template
+  variables:
+    NAME: "unreal-upload-api-stormblast"
+    MANAGER_URL: "unreal-upload-manager.stormblast.arcware.cloud"
+    KEYCLOAK_URL: "https://auth.stormblast.arcware.cloud"
+    KEYCLOAK_CLIENT_SECRET: $KEYCLOAK_CLIENT_SECRET_UUA_STORMBLAST
+  tags:
+    - uua-stormblast.arcware.cloud
+
+deploy-unreal-upload-api-ragnarok:
+  extends: .deploy-unreal-upload-api-template
+  variables:
+    NAME: "unreal-upload-api-ragnarok"
+    MANAGER_URL: "unreal-upload-manager.ragnarok.arcware.cloud"
+    KEYCLOAK_URL: "https://auth.ragnarok.arcware.cloud"
+    KEYCLOAK_CLIENT_SECRET: $KEYCLOAK_CLIENT_SECRET_UUA_RAGNAROK
+  tags:
+    - uua-ragnarok.arcware.cloud
+
+deploy-unreal-upload-api-usa:
+  extends: .deploy-unreal-upload-api-template
+  variables:
+    NAME: "unreal-upload-api-usa"
+    MANAGER_URL: "unreal-upload-manager.ragnarok.arcware.cloud"
+    KEYCLOAK_URL: "https://auth.ragnarok.arcware.cloud"
+    KEYCLOAK_CLIENT_SECRET: $KEYCLOAK_CLIENT_SECRET_UUA_USA
+  tags:
+    - uua-usa

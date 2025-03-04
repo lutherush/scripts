@@ -1,0 +1,93 @@
+# ✅ **Gauging System Builds**
+.gauging-regex: &gauging-regex /^gauging\/[A-Z]+-\d+(?:-[a-z0-9]+)?$/
+
+# Reusable rule combining branch regex and commit message trigger
+.gauging-rule: &gauging-rule
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^gauging\/[A-Z]+-\d+(?:-[a-z0-9]+)?$/ && $CI_COMMIT_MESSAGE && $CI_COMMIT_MESSAGE =~ /run-gauging/'
+
+gauging-build:
+  stage: build
+  <<: *gauging-rule
+  tags:
+    - bobthebuilder
+    - typescript
+  script:
+    - cd apps/dotnet/unreal-gauging
+    - dotnet publish -o ./app -f net7.0 -r win-x64 -c Release --self-contained true
+  artifacts:
+    paths:
+      - apps/dotnet/unreal-gauging/app/
+
+# ========================= GAUGING ZIP & UPLOAD =========================
+
+gauging-image-http:
+  stage: image
+  <<: *gauging-rule
+  tags:
+    - bobthebuilder
+    - typescript
+  needs:
+    - gauging-build
+  script:
+    - |
+      VERSION="$(sed -z 's/\n/\./g;s/\.$/\n/' <<< "$(cat apps/dotnet/unreal-gauging/app/Version.json | grep -oPiw '((?:(?<="Major": )|(?<="Major":))[0-9]+)|((?:(?<="Minor": )|(?<="Minor":))[0-9]+)|((?:(?<="Patch": )|(?<="Patch":))[0-9]+)')")"
+    - FILE=gauging.zip
+    - |
+      if [ -f "$FILE" ]; then
+        echo "File '$FILE' already exists."
+        exit 1
+      fi
+    - cd apps/dotnet/unreal-gauging/app
+    - zip -r -9 $FILE ./
+    - cd ../../../..
+    # Upload to HTTP server
+    - curl -X PUT -Ffile=@apps/dotnet/unreal-gauging/app/gauging.zip "http://10.192.20.30:25478/files/gauging.zip?token=$RUNNER_UPDATE_TOKEN"
+    # Check if file exists on the server
+    - |
+      if [ $(curl -s -o /dev/null -w "%{http_code}" "http://10.192.20.30:25478/files/gauging.zip?token=$RUNNER_UPDATE_TOKEN") -eq 200 ]; then
+        echo "File '$FILE' uploaded successfully."
+      else
+        echo "File '$FILE' already exists."
+      fi
+    # Delete zip file after upload
+    - rm -rf apps/dotnet/unreal-gauging/app/gauging.zip
+  artifacts:
+    paths:
+      - apps/dotnet/unreal-gauging/app/
+
+# ========================= GAUGING DEPLOYMENT TEMPLATE =========================
+
+.deploy-gauging-template: &deploy-gauging-template
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+    GIT_CHECKOUT: "false"
+  <<: *gauging-rule
+  needs:
+    - gauging-image-http
+  script:
+    - $DOWNLOAD_URL="http://10.192.20.30:25478/files/gauging.zip?token=$RUNNER_UPDATE_TOKEN"
+    - $DOWNLOAD_PATH="$DOWNLOAD_DIR\unreal-gauging.zip"
+    # Step 1: Download the zip file
+    - Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile $DOWNLOAD_PATH    
+    # Step 2: Stop the "unreal-gauging" Windows service
+    - Stop-Service -Name "unreal-gauging" -Force    
+    # Step 3: Extract the zip file
+    - Expand-Archive -Path $DOWNLOAD_PATH -DestinationPath "$INSTALL_DIR\unreal-gauging" -Force    
+    # Step 4: Start the unreal-gauging service
+    - Start-Service -Name "unreal-gauging"    
+    # Step 5: Delete the downloaded file
+    - Remove-Item -Path $DOWNLOAD_PATH
+  when: manual
+
+# ========================= PARALLEL DEPLOYMENT MATRIX =========================
+
+deploy-gauging:
+  extends: .deploy-gauging-template
+  parallel:
+    matrix:
+      - ENV: [stormblast, area51, ragnarok]
+        DOWNLOAD_DIR: ["C:", "G:", "C:"]
+        INSTALL_DIR: ["C:", "G:", "C:"]
+        TAGS: [gauging-stormblast001, gauging-area001, gauging-ragnarok001]
