@@ -101,6 +101,6 @@ else
   done
 fi
 
-# Finally, push all commits.
+## Finally, push all commits.
 git push
 
